@@ -364,12 +364,12 @@ function Ambient() {
 
 function Gallery() {
   const tiles = [
-    { src: lec1.url, span: "sm:row-span-2", ratio: "3 / 4", label: "Sala" },
-    { src: lec5.url, span: "", ratio: "1 / 1", label: "Pizza" },
-    { src: lec4.url, span: "", ratio: "1 / 1", label: "Bar" },
-    { src: lec3.url, span: "", ratio: "1 / 1", label: "Sladica" },
-    { src: lec2.url, span: "", ratio: "1 / 1", label: "Detajl" },
-    { src: lec6.url, span: "sm:col-span-2", ratio: "16 / 10", label: "Vhod" },
+    { src: lec1.url, span: "md:col-span-2 md:row-span-2", ratio: "4 / 3", label: "Sala", size: "large" },
+    { src: lec5.url, span: "", ratio: "3 / 4", label: "Pizza", size: "small" },
+    { src: lec4.url, span: "", ratio: "3 / 4", label: "Bar", size: "small" },
+    { src: lec3.url, span: "md:row-span-2", ratio: "3 / 4", label: "Sladica", size: "tall" },
+    { src: lec2.url, span: "", ratio: "3 / 4", label: "Detajl", size: "small" },
+    { src: lec6.url, span: "md:col-span-2", ratio: "16 / 9", label: "Vhod", size: "wide" },
   ];
   return (
     <section id="galerija" className="bg-cream py-28 md:py-40 px-6">
@@ -382,22 +382,30 @@ function Gallery() {
           <span className="block hairline w-16 mx-auto mt-8" />
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4 auto-rows-[1fr]">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           {tiles.map((t, i) => (
             <figure
               key={i}
-              className={"reveal relative overflow-hidden bg-emerald/10 group " + t.span}
-              style={{ aspectRatio: t.ratio, transitionDelay: `${i * 80}ms` }}
+              className={
+                "reveal relative overflow-hidden bg-emerald/10 group cursor-pointer " +
+                t.span
+              }
+              style={{ aspectRatio: t.ratio, transitionDelay: `${i * 100}ms` }}
             >
-              <img
-                src={t.src}
-                alt={`Le Cité — ${t.label}`}
-                loading="lazy"
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-emerald-deep/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <figcaption className="absolute left-4 bottom-4 text-cream opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                <span className="serif italic text-base">{t.label}</span>
+              <div className="absolute inset-0 overflow-hidden">
+                <img
+                  src={t.src}
+                  alt={`Le Cité — ${t.label}`}
+                  loading="lazy"
+                  className="h-full w-full object-cover transition-all duration-[1400ms] ease-[cubic-bezier(0.16,0.84,0.3,1)] group-hover:scale-110 group-hover:brightness-110"
+                />
+                {/* shine sweep on hover */}
+                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[1000ms] ease-out bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12 pointer-events-none" />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-emerald-deep/70 via-emerald-deep/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-out" />
+              <figcaption className="absolute left-0 right-0 bottom-0 p-4 md:p-5 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700 ease-[cubic-bezier(0.16,0.84,0.3,1)]">
+                <span className="block hairline w-8 mb-2" />
+                <span className="serif italic text-cream text-lg md:text-xl">{t.label}</span>
               </figcaption>
             </figure>
           ))}
