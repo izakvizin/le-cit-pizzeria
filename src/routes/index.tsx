@@ -4,6 +4,12 @@ import { Instagram, MapPin, Phone, MessageCircle } from "lucide-react";
 import ovenImg from "@/assets/le-cite-oven.jpg";
 import ingredientsImg from "@/assets/le-cite-ingredients.jpg";
 import barImg from "@/assets/le-cite-bar.jpg";
+import lec1 from "@/assets/gallery/lec1.jpg.asset.json";
+import lec2 from "@/assets/gallery/lec2.jpg.asset.json";
+import lec3 from "@/assets/gallery/lec3.jpg.asset.json";
+import lec4 from "@/assets/gallery/lec4.jpg.asset.json";
+import lec5 from "@/assets/gallery/lec5.jpg.asset.json";
+import lec6 from "@/assets/gallery/lec6.jpg.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -52,6 +58,7 @@ function Page() {
       <Ambient />
       <Gallery />
       <Reservation />
+      <LocationMap />
       <Footer />
     </div>
   );
@@ -82,6 +89,7 @@ function Nav() {
           <a href="#jedilnik" className="hover:text-cream transition-colors">Jedilnik</a>
           <a href="#interier" className="hover:text-cream transition-colors">O nas</a>
           <a href="#galerija" className="hover:text-cream transition-colors">Galerija</a>
+          <a href="#lokacija" className="hover:text-cream transition-colors">Lokacija</a>
           <a href="#rezervacija" className="hover:text-cream transition-colors">Kontakt</a>
           <a
             href="#rezervacija"
@@ -356,12 +364,12 @@ function Ambient() {
 
 function Gallery() {
   const tiles = [
-    { ratio: "3 / 4", span: "sm:row-span-2", label: "Sala" },
-    { ratio: "1 / 1", span: "", label: "Pizza" },
-    { ratio: "1 / 1", span: "", label: "Bar" },
-    { ratio: "4 / 5", span: "", label: "Detajl" },
-    { ratio: "4 / 5", span: "", label: "Vzdušje" },
-    { ratio: "3 / 4", span: "sm:row-span-2", label: "Keramika" },
+    { src: lec1.url, span: "sm:row-span-2", ratio: "3 / 4", label: "Sala" },
+    { src: lec5.url, span: "", ratio: "1 / 1", label: "Pizza" },
+    { src: lec4.url, span: "", ratio: "1 / 1", label: "Bar" },
+    { src: lec3.url, span: "", ratio: "1 / 1", label: "Sladica" },
+    { src: lec2.url, span: "", ratio: "1 / 1", label: "Detajl" },
+    { src: lec6.url, span: "sm:col-span-2", ratio: "16 / 10", label: "Vhod" },
   ];
   return (
     <section id="galerija" className="bg-cream py-28 md:py-40 px-6">
@@ -374,29 +382,68 @@ function Gallery() {
           <span className="block hairline w-16 mx-auto mt-8" />
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 auto-rows-[1fr]">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4 auto-rows-[1fr]">
           {tiles.map((t, i) => (
             <figure
               key={i}
               className={"reveal relative overflow-hidden bg-emerald/10 group " + t.span}
               style={{ aspectRatio: t.ratio, transitionDelay: `${i * 80}ms` }}
             >
-              <div className="absolute inset-0 marble-pattern opacity-80" />
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-emerald/40 group-hover:text-emerald/60 transition-colors">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
-                  <path d="M3 7h3l2-2h8l2 2h3v12H3z" />
-                  <circle cx="12" cy="13" r="4" />
-                </svg>
-                <span className="serif italic text-sm mt-3">{t.label}</span>
-              </div>
-              <div className="absolute inset-0 border border-emerald/10" />
+              <img
+                src={t.src}
+                alt={`Le Cité — ${t.label}`}
+                loading="lazy"
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-emerald-deep/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <figcaption className="absolute left-4 bottom-4 text-cream opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                <span className="serif italic text-base">{t.label}</span>
+              </figcaption>
             </figure>
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
 
-        <p className="reveal mt-16 text-center text-foreground/45 text-[11px] tracking-wide-2 uppercase">
-          Slike kmalu
-        </p>
+function LocationMap() {
+  return (
+    <section id="lokacija" className="bg-emerald text-cream py-28 md:py-40 px-6 relative overflow-hidden">
+      <div className="absolute inset-0 marble-pattern-cream opacity-20 pointer-events-none" />
+      <div className="relative max-w-6xl mx-auto">
+        <div className="text-center reveal mb-14 md:mb-20">
+          <p className="text-bronze tracking-wide-2 uppercase text-[11px] mb-5">Dove siamo</p>
+          <h2 className="serif text-cream" style={{ fontSize: "clamp(2.5rem, 6vw, 4.5rem)" }}>
+            Kje nas najdete
+          </h2>
+          <span className="block hairline w-16 mx-auto mt-8" />
+          <p className="mt-8 text-cream/75 serif italic text-lg">Bevkov trg, 5000 Nova Gorica</p>
+        </div>
+
+        <div className="reveal relative overflow-hidden border border-cream/10 shadow-2xl" style={{ aspectRatio: "16 / 9" }}>
+          <iframe
+            title="Le Cité — Bevkov trg, Nova Gorica"
+            src="https://www.google.com/maps?q=Bevkov+trg+Nova+Gorica&output=embed"
+            className="absolute inset-0 w-full h-full"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            style={{ border: 0, filter: "grayscale(0.3) contrast(1.05)" }}
+            allowFullScreen
+          />
+        </div>
+
+        <div className="reveal mt-10 flex flex-col sm:flex-row justify-center gap-4">
+          <a
+            href="https://www.google.com/maps/dir/?api=1&destination=Bevkov+trg+Nova+Gorica"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-3 bg-bronze text-cream px-8 py-4 text-[12px] tracking-wide-2 uppercase hover:bg-[color:var(--bronze-soft)] transition-colors"
+          >
+            <MapPin size={16} strokeWidth={1.6} />
+            Navodila za pot
+          </a>
+        </div>
       </div>
     </section>
   );
