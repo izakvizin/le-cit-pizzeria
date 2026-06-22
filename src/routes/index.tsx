@@ -354,6 +354,55 @@ function Ambient() {
   );
 }
 
+function Gallery() {
+  const tiles = [
+    { ratio: "3 / 4", span: "sm:row-span-2", label: "Sala" },
+    { ratio: "1 / 1", span: "", label: "Pizza" },
+    { ratio: "1 / 1", span: "", label: "Bar" },
+    { ratio: "4 / 5", span: "", label: "Detajl" },
+    { ratio: "4 / 5", span: "", label: "Vzdušje" },
+    { ratio: "3 / 4", span: "sm:row-span-2", label: "Keramika" },
+  ];
+  return (
+    <section id="galerija" className="bg-cream py-28 md:py-40 px-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center reveal mb-16 md:mb-20">
+          <p className="text-bronze tracking-wide-2 uppercase text-[11px] mb-5">Galleria</p>
+          <h2 className="serif text-emerald" style={{ fontSize: "clamp(2.5rem, 6vw, 4.5rem)" }}>
+            Galerija
+          </h2>
+          <span className="block hairline w-16 mx-auto mt-8" />
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 auto-rows-[1fr]">
+          {tiles.map((t, i) => (
+            <figure
+              key={i}
+              className={"reveal relative overflow-hidden bg-emerald/10 group " + t.span}
+              style={{ aspectRatio: t.ratio, transitionDelay: `${i * 80}ms` }}
+            >
+              <div className="absolute inset-0 marble-pattern opacity-80" />
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-emerald/40 group-hover:text-emerald/60 transition-colors">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+                  <path d="M3 7h3l2-2h8l2 2h3v12H3z" />
+                  <circle cx="12" cy="13" r="4" />
+                </svg>
+                <span className="serif italic text-sm mt-3">{t.label}</span>
+              </div>
+              <div className="absolute inset-0 border border-emerald/10" />
+            </figure>
+          ))}
+        </div>
+
+        <p className="reveal mt-16 text-center text-foreground/45 text-[11px] tracking-wide-2 uppercase">
+          Slike kmalu
+        </p>
+      </div>
+    </section>
+  );
+}
+
+
 function Reservation() {
   return (
     <section id="rezervacija" className="grid md:grid-cols-2 min-h-[90vh]">
