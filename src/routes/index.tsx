@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
-import { Instagram, MapPin, Phone } from "lucide-react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Instagram, MapPin, Phone, MessageCircle } from "lucide-react";
 import ovenImg from "@/assets/le-cite-oven.jpg";
 import ingredientsImg from "@/assets/le-cite-ingredients.jpg";
 import barImg from "@/assets/le-cite-bar.jpg";
@@ -353,13 +353,6 @@ function Ambient() {
 }
 
 function Reservation() {
-  const [sent, setSent] = useState(false);
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setSent(true);
-  };
-  const inputCls =
-    "w-full bg-transparent border-0 border-b border-emerald/25 focus:border-bronze focus:outline-none py-3 text-emerald placeholder:text-emerald/40 transition-colors";
   return (
     <section id="rezervacija" className="grid md:grid-cols-2 min-h-[90vh]">
       <div className="bg-emerald text-cream p-10 md:p-20 flex items-center relative overflow-hidden">
@@ -370,17 +363,13 @@ function Reservation() {
             Rezerviraj mizo
           </h2>
           <span className="block hairline w-16 my-8" />
-          <p className="text-cream/75 leading-relaxed">
-            Za rezervacije pokličite ali pišite. Priporočamo rezervacijo za vikende.
+          <p className="serif italic text-cream/80 text-lg md:text-xl leading-relaxed">
+            Pokličite nas — najhitreje in najbolj osebno. Za vikende priporočamo rezervacijo nekaj dni vnaprej.
           </p>
           <ul className="mt-12 space-y-5 text-cream/85">
             <li className="flex items-start gap-4">
               <MapPin size={18} strokeWidth={1.4} className="text-bronze mt-0.5 shrink-0" />
               <span>Bevkov trg, 5000 Nova Gorica</span>
-            </li>
-            <li className="flex items-start gap-4">
-              <Phone size={18} strokeWidth={1.4} className="text-bronze mt-0.5 shrink-0" />
-              <a href="tel:+38659814129" className="hover:text-cream">+386 5 981 4129</a>
             </li>
             <li className="flex items-start gap-4">
               <Instagram size={18} strokeWidth={1.4} className="text-bronze mt-0.5 shrink-0" />
@@ -391,34 +380,46 @@ function Reservation() {
       </div>
 
       <div className="bg-cream p-10 md:p-20 flex items-center">
-        <form onSubmit={onSubmit} className="w-full max-w-md mx-auto reveal">
-          {sent ? (
-            <div className="text-center py-20">
-              <p className="serif italic text-emerald text-3xl leading-snug">Hvala — kmalu se vam oglasimo.</p>
-              <span className="block hairline w-16 my-8 mx-auto" />
-              <p className="text-foreground/60 text-sm">Vaše povpraševanje smo sprejeli.</p>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              <div className="grid sm:grid-cols-2 gap-6">
-                <input required placeholder="Ime in priimek" className={inputCls} />
-                <input required type="email" placeholder="E-pošta" className={inputCls} />
-              </div>
-              <div className="grid sm:grid-cols-3 gap-6">
-                <input required type="date" placeholder="Datum" className={inputCls} />
-                <input required type="time" placeholder="Ura" className={inputCls} />
-                <input required type="number" min={1} max={20} placeholder="Št. gostov" className={inputCls} />
-              </div>
-              <textarea rows={3} placeholder="Sporočilo (neobvezno)" className={inputCls + " resize-none"} />
-              <button
-                type="submit"
-                className="w-full bg-bronze text-cream py-4 text-[12px] tracking-wide-2 uppercase hover:bg-[color:var(--bronze-soft)] transition-colors mt-4"
-              >
-                Pošlji rezervacijo
-              </button>
-            </div>
-          )}
-        </form>
+        <div className="w-full max-w-md mx-auto reveal text-center md:text-left">
+          <p className="text-bronze tracking-wide-2 uppercase text-[11px] mb-8">Pokličite</p>
+
+          <a
+            href="tel:+38659814129"
+            className="serif text-emerald block leading-[0.95] hover:text-bronze transition-colors"
+            style={{ fontSize: "clamp(2.25rem, 6.5vw, 4.25rem)" }}
+          >
+            +386 5 981 4129
+          </a>
+
+          <span className="block hairline w-16 my-10 mx-auto md:mx-0" />
+
+          <p className="text-foreground/65 leading-relaxed">
+            Odgovorimo med delovnim časom. Povejte število gostov, dan in uro — in vam takoj potrdimo mizo.
+          </p>
+
+          <div className="mt-10 flex flex-col sm:flex-row gap-4">
+            <a
+              href="tel:+38659814129"
+              className="flex-1 inline-flex items-center justify-center gap-3 bg-emerald text-cream py-4 text-[12px] tracking-wide-2 uppercase hover:bg-emerald-deep transition-colors"
+            >
+              <Phone size={16} strokeWidth={1.6} />
+              Pokliči
+            </a>
+            <a
+              href="https://wa.me/38659814129?text=Pozdravljeni%2C%20rad%20bi%20rezerviral%20mizo%20v%20Le%20Cit%C3%A9."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 inline-flex items-center justify-center gap-3 border border-emerald/80 text-emerald py-4 text-[12px] tracking-wide-2 uppercase hover:bg-emerald hover:text-cream transition-colors"
+            >
+              <MessageCircle size={16} strokeWidth={1.6} />
+              WhatsApp
+            </a>
+          </div>
+
+          <p className="mt-10 text-[11px] tracking-wide-2 uppercase text-foreground/40">
+            Pon–Sob · 11:00–23:00
+          </p>
+        </div>
       </div>
     </section>
   );
