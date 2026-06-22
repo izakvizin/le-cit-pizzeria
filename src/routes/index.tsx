@@ -50,6 +50,7 @@ function Page() {
       <Menu />
       <Reviews />
       <Ambient />
+      <Gallery />
       <Reservation />
       <Footer />
     </div>
@@ -80,6 +81,7 @@ function Nav() {
         <div className="hidden md:flex items-center gap-10 text-[13px] tracking-wide-2 uppercase text-cream/85">
           <a href="#jedilnik" className="hover:text-cream transition-colors">Jedilnik</a>
           <a href="#interier" className="hover:text-cream transition-colors">O nas</a>
+          <a href="#galerija" className="hover:text-cream transition-colors">Galerija</a>
           <a href="#rezervacija" className="hover:text-cream transition-colors">Kontakt</a>
           <a
             href="#rezervacija"
