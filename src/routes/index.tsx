@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
-import { Instagram, MapPin, Phone } from "lucide-react";
+import { Instagram, MapPin, Phone, MessageCircle } from "lucide-react";
 import ovenImg from "@/assets/le-cite-oven.jpg";
 import ingredientsImg from "@/assets/le-cite-ingredients.jpg";
 import barImg from "@/assets/le-cite-bar.jpg";
