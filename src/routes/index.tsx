@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
-import { Instagram, MapPin, Phone, Flame, Leaf, Wine } from "lucide-react";
+import { Instagram, MapPin, Phone } from "lucide-react";
+import ovenImg from "@/assets/le-cite-oven.jpg";
+import ingredientsImg from "@/assets/le-cite-ingredients.jpg";
+import barImg from "@/assets/le-cite-bar.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -298,9 +301,9 @@ function Reviews() {
 
 function Ambient() {
   const cards = [
-    { icon: Flame, label: "Peč" },
-    { icon: Leaf, label: "Sestavine" },
-    { icon: Wine, label: "Bar" },
+    { src: ovenImg, label: "Peč", caption: "Ročna 3D keramika" },
+    { src: ingredientsImg, label: "Sestavine", caption: "San Marzano · Fior di latte" },
+    { src: barImg, label: "Bar", caption: "Smaragdna garnitura" },
   ];
   return (
     <section id="interier" className="grid md:grid-cols-2 min-h-[80vh]">
@@ -321,30 +324,29 @@ function Ambient() {
         </div>
       </div>
 
-      <div className="bg-[color:var(--muted)] p-8 md:p-14 grid grid-cols-1 sm:grid-cols-3 gap-5 md:gap-6 items-stretch">
-        {cards.map((c, i) => {
-          const Icon = c.icon;
-          const dark = i % 2 === 1;
-          return (
-            <div
-              key={c.label}
-              className={
-                "reveal relative overflow-hidden flex flex-col justify-end p-6 " +
-                (dark ? "bg-emerald text-cream" : "bg-cream text-emerald border border-emerald/10")
-              }
-              style={{ aspectRatio: "4 / 5", transitionDelay: `${i * 120}ms` }}
-            >
-              <div className={"absolute inset-0 " + (dark ? "marble-pattern-cream opacity-40" : "marble-pattern opacity-70")} />
-              <div className="relative flex flex-col h-full justify-between">
-                <Icon size={28} strokeWidth={1.2} className={dark ? "text-bronze" : "text-emerald"} />
-                <div>
-                  <span className="block hairline w-8 mb-3" />
-                  <p className="serif text-xl">{c.label}</p>
-                </div>
-              </div>
-            </div>
-          );
-        })}
+      <div className="bg-[color:var(--muted)] p-6 md:p-10 grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-5 items-stretch">
+        {cards.map((c, i) => (
+          <figure
+            key={c.label}
+            className="reveal group relative overflow-hidden bg-emerald-deep"
+            style={{ aspectRatio: "4 / 5", transitionDelay: `${i * 120}ms` }}
+          >
+            <img
+              src={c.src}
+              alt={c.label}
+              loading="lazy"
+              width={1024}
+              height={1024}
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-emerald-deep/85 via-emerald-deep/15 to-transparent" />
+            <figcaption className="absolute inset-x-0 bottom-0 p-5 text-cream">
+              <span className="block hairline w-8 mb-3" />
+              <p className="serif text-xl leading-tight">{c.label}</p>
+              <p className="text-[11px] tracking-wide-2 uppercase text-cream/60 mt-1">{c.caption}</p>
+            </figcaption>
+          </figure>
+        ))}
       </div>
     </section>
   );
