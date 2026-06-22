@@ -147,9 +147,6 @@ function Hero() {
         </div>
       </div>
 
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-cream/40 text-[10px] tracking-display uppercase">
-        Scroll
-      </div>
     </section>
   );
 }
