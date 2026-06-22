@@ -133,7 +133,7 @@ function Hero() {
         </div>
         <div className="reveal" style={{ transitionDelay: "650ms" }}>
           <p className="text-cream/70 text-sm md:text-base">
-            Pizza napoletana. Bevkov trg, Nova Gorica.
+            Pristna neapeljska pica v središču Nove Gorice. Rezervirajte mizo in okusite vrhunske sestavine v Le Cité.
           </p>
         </div>
         <div className="reveal mt-12 flex flex-col sm:flex-row justify-center gap-4" style={{ transitionDelay: "850ms" }}>
