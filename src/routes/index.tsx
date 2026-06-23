@@ -60,7 +60,6 @@ function Page() {
       <Gallery />
       <Reservation />
       <LocationMap />
-
       <Footer />
     </div>
   );
@@ -123,7 +122,6 @@ function Hero() {
     >
       <div className="absolute inset-0 marble-pattern-cream opacity-40" />
       <div className="absolute inset-0" style={{ background: "radial-gradient(60% 50% at 50% 60%, transparent 0%, rgba(7,20,14,0.55) 100%)" }} />
-
       <div className="relative text-center px-6 max-w-4xl">
         <div className="reveal" style={{ transitionDelay: "100ms" }}>
           <p className="text-bronze tracking-wide-2 uppercase text-[11px] md:text-xs mb-10">
@@ -161,7 +159,6 @@ function Hero() {
           </a>
         </div>
       </div>
-
     </section>
   );
 }
@@ -174,7 +171,7 @@ function Intro() {
           className="serif italic text-emerald leading-[1.25]"
           style={{ fontSize: "clamp(1.75rem, 4.2vw, 3.25rem)" }}
         >
-          „Vsako testo počiva. Vsaka sestavina je izbrana. Vsaka pica je razlog za vrnitev.”
+          „Vsako testo počiva. Vsaka sestavina je izbrana. Vsaka pica je razlog za vrnitev."
         </p>
       </div>
     </section>
@@ -222,7 +219,6 @@ function Menu() {
             Jedilnik
           </h2>
         </div>
-
         <div className="mt-16 flex flex-wrap justify-center gap-8 md:gap-12 reveal">
           {tabs.map((t) => (
             <button
@@ -243,7 +239,6 @@ function Menu() {
             </button>
           ))}
         </div>
-
         <ul className="mt-16 divide-y divide-cream/10">
           {MENU[active].map((d) => (
             <li
@@ -271,7 +266,6 @@ function Menu() {
             </li>
           ))}
         </ul>
-
         <p className="mt-10 text-center text-cream/45 text-[12px] tracking-wide-2 uppercase reveal">
           Brezglutenske različice na zahtevo
         </p>
@@ -279,186 +273,6 @@ function Menu() {
     </section>
   );
 }
-
-function Reviews() {
-  const Card = ({ quote, author }: { quote: string; author: ReactNode }) => (
-    <div className="reveal">
-      <p
-        className="serif italic text-emerald leading-[1.3]"
-        style={{ fontSize: "clamp(1.5rem, 2.6vw, 2.25rem)" }}
-      >
-        „{quote}”
-      </p>
-      <div className="mt-8 text-sm text-foreground/70">{author}</div>
-    </div>
-  );
-  const Stars = () => (
-    <span className="text-bronze tracking-[0.15em]" aria-label="5 zvezdic">★★★★★</span>
-  );
-  return (
-    <section className="bg-cream py-28 md:py-40 px-6">
-      <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 md:gap-24">
-        <Card
-          quote="Svetovno dobre pice. Simfonija okusov."
-          author={<>— Lara I., Google &nbsp; <Stars /></>}
-        />
-        <Card
-          quote="One of the best Neapolitan-style pizzas in Slovenia."
-          author={<>— Nejc F., Google &nbsp; <Stars /></>}
-        />
-      </div>
-    </section>
-  );
-}
-
-function Ambient() {
-  const cards = [
-    { src: ovenImg, label: "Peč", caption: "Ročna 3D keramika" },
-    { src: ingredientsImg, label: "Sestavine", caption: "San Marzano · Fior di latte" },
-    { src: barImg, label: "Bar", caption: "Smaragdna garnitura" },
-  ];
-  return (
-    <section id="interier" className="grid md:grid-cols-2 min-h-[80vh]">
-      <div className="bg-emerald text-cream p-10 md:p-20 flex items-center relative overflow-hidden">
-        <div className="absolute inset-0 marble-pattern-cream opacity-25 pointer-events-none" />
-        <div className="relative max-w-md reveal">
-          <p className="text-bronze tracking-wide-2 uppercase text-[11px] mb-6">Atmosfera</p>
-          <h2 className="serif text-cream leading-[1.05]" style={{ fontSize: "clamp(2.5rem, 5vw, 4rem)" }}>
-            Interier
-          </h2>
-          <span className="block hairline w-16 my-8" />
-          <p className="serif italic text-cream/80 text-lg md:text-xl leading-relaxed">
-            Ukrivljen kovinski pult. Smaragdna sedežna garnitura. Ročno izdelana 3D keramika ob peči — barve reke Soče.
-          </p>
-          <p className="mt-6 text-cream/55 text-sm tracking-wide leading-relaxed">
-            Nagrajeno arhitekturno delo studia Kreadom, 2020.
-          </p>
-        </div>
-      </div>
-
-      <div className="bg-[color:var(--muted)] p-6 md:p-10 grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-5 items-stretch">
-        {cards.map((c, i) => (
-          <figure
-            key={c.label}
-            className="reveal group relative overflow-hidden bg-emerald-deep"
-            style={{ aspectRatio: "4 / 5", transitionDelay: `${i * 120}ms` }}
-          >
-            <img
-              src={c.src}
-              alt={c.label}
-              loading="lazy"
-              width={1024}
-              height={1024}
-              className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-emerald-deep/85 via-emerald-deep/15 to-transparent" />
-            <figcaption className="absolute inset-x-0 bottom-0 p-5 text-cream">
-              <span className="block hairline w-8 mb-3" />
-              <p className="serif text-xl leading-tight">{c.label}</p>
-              <p className="text-[11px] tracking-wide-2 uppercase text-cream/60 mt-1">{c.caption}</p>
-            </figcaption>
-          </figure>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function Gallery() {
-  const tiles = [
-    { src: lec1.url, span: "md:col-span-2 md:row-span-2", ratio: "4 / 3", label: "Sala", size: "large" },
-    { src: lec5.url, span: "", ratio: "3 / 4", label: "Pizza", size: "small" },
-    { src: lec4.url, span: "", ratio: "3 / 4", label: "Bar", size: "small" },
-    { src: lec3.url, span: "md:row-span-2", ratio: "3 / 4", label: "Sladica", size: "tall" },
-    { src: lec2.url, span: "", ratio: "3 / 4", label: "Detajl", size: "small" },
-    { src: lec6.url, span: "md:col-span-2", ratio: "16 / 9", label: "Vhod", size: "wide" },
-  ];
-  return (
-    <section id="galerija" className="bg-cream py-28 md:py-40 px-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center reveal mb-16 md:mb-20">
-          <p className="text-bronze tracking-wide-2 uppercase text-[11px] mb-5">Galleria</p>
-          <h2 className="serif text-emerald" style={{ fontSize: "clamp(2.5rem, 6vw, 4.5rem)" }}>
-            Galerija
-          </h2>
-          <span className="block hairline w-16 mx-auto mt-8" />
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          {tiles.map((t, i) => (
-            <figure
-              key={i}
-              className={
-                "reveal relative overflow-hidden bg-emerald/10 group cursor-pointer " +
-                t.span
-              }
-              style={{ aspectRatio: t.ratio, transitionDelay: `${i * 100}ms` }}
-            >
-              <div className="absolute inset-0 overflow-hidden">
-                <img
-                  src={t.src}
-                  alt={`Le Cité — ${t.label}`}
-                  loading="lazy"
-                  className="h-full w-full object-cover transition-all duration-[1400ms] ease-[cubic-bezier(0.16,0.84,0.3,1)] group-hover:scale-110 group-hover:brightness-110"
-                />
-                {/* shine sweep on hover */}
-                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[1000ms] ease-out bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12 pointer-events-none" />
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-emerald-deep/70 via-emerald-deep/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-out" />
-              <figcaption className="absolute left-0 right-0 bottom-0 p-4 md:p-5 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700 ease-[cubic-bezier(0.16,0.84,0.3,1)]">
-                <span className="block hairline w-8 mb-2" />
-                <span className="serif italic text-cream text-lg md:text-xl">{t.label}</span>
-              </figcaption>
-            </figure>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function LocationMap() {
-  return (
-    <section id="lokacija" className="bg-emerald text-cream py-28 md:py-40 px-6 relative overflow-hidden">
-      <div className="absolute inset-0 marble-pattern-cream opacity-20 pointer-events-none" />
-      <div className="relative max-w-6xl mx-auto">
-        <div className="text-center reveal mb-14 md:mb-20">
-          <p className="text-bronze tracking-wide-2 uppercase text-[11px] mb-5">Dove siamo</p>
-          <h2 className="serif text-cream" style={{ fontSize: "clamp(2.5rem, 6vw, 4.5rem)" }}>
-            Kje nas najdete
-          </h2>
-          <span className="block hairline w-16 mx-auto mt-8" />
-          <p className="mt-8 text-cream/75 serif italic text-lg">Bevkov trg, 5000 Nova Gorica</p>
-        </div>
-
-        <div className="reveal relative overflow-hidden border border-cream/10 shadow-2xl" style={{ aspectRatio: "16 / 9" }}>
-          <iframe
-            title="Le Cité — Bevkov trg, Nova Gorica"
-            src="https://www.google.com/maps?q=Bevkov+trg+Nova+Gorica&output=embed"
-            className="absolute inset-0 w-full h-full"
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            style={{ border: 0, filter: "grayscale(0.3) contrast(1.05)" }}
-            allowFullScreen
-          />
-        </div>
-
-        <div className="reveal mt-10 flex flex-col sm:flex-row justify-center gap-4">
-          <a
-            href="https://www.google.com/maps/dir/?api=1&destination=Bevkov+trg+Nova+Gorica"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-3 bg-bronze text-cream px-8 py-4 text-[12px] tracking-wide-2 uppercase hover:bg-[color:var(--bronze-soft)] transition-colors"
-          >
-            <MapPin size={16} strokeWidth={1.6} />
-            Navodila za pot
-          </a>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 
 function DailyMenu() {
   const CSV_URL =
@@ -487,30 +301,25 @@ function DailyMenu() {
         const lines = text.trim().split(/\r?\n/).slice(1);
         const parsed: Row[] = lines
           .map((l) => {
-            // simple CSV split (no embedded commas expected)
             const [datum, kosilo, cena] = l.split(",");
             return {
-              datum: (datum ?? "").trim().replace(/[^0-9.]/g, ""),
+              datum: (datum ?? "").replace(/[^0-9.]/g, "").trim(),
               kosilo: (kosilo ?? "").trim(),
               cena: (cena ?? "").trim(),
             };
           })
           .filter((r) => r.datum && r.kosilo);
-console.log("Sheet podatki:", parsed);
-console.log("Iščem datum:", todayStr);  
         if (!cancelled) setRows(parsed);
       })
-      .catch(() => {   
+      .catch(() => {
         if (!cancelled) setError(true);
       });
     return () => {
       cancelled = true;
     };
   }, []);
-console.log("Datum znaki:", rows?.[0]?.datum.split("").map(c => c.charCodeAt(0)));
-console.log("Today znaki:", todayStr.split("").map(c => c.charCodeAt(0)));
-  const todays = (rows ?? []).filter((r) => r.datum.trim() === todayStr.trim());
-console.log("Todays:", todays, "rows:", rows, "todayStr:", todayStr);
+
+  const todays = (rows ?? []).filter((r) => r.datum === todayStr);
 
   return (
     <section id="dnevni-meni" className="bg-cream py-28 md:py-40 px-6">
@@ -570,8 +379,181 @@ console.log("Todays:", todays, "rows:", rows, "todayStr:", todayStr);
   );
 }
 
-function Reservation() {
+function Reviews() {
+  const Card = ({ quote, author }: { quote: string; author: ReactNode }) => (
+    <div className="reveal">
+      <p
+        className="serif italic text-emerald leading-[1.3]"
+        style={{ fontSize: "clamp(1.5rem, 2.6vw, 2.25rem)" }}
+      >
+        „{quote}"
+      </p>
+      <div className="mt-8 text-sm text-foreground/70">{author}</div>
+    </div>
+  );
+  const Stars = () => (
+    <span className="text-bronze tracking-[0.15em]" aria-label="5 zvezdic">★★★★★</span>
+  );
+  return (
+    <section className="bg-cream py-28 md:py-40 px-6">
+      <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 md:gap-24">
+        <Card
+          quote="Svetovno dobre pice. Simfonija okusov."
+          author={<>— Lara I., Google &nbsp; <Stars /></>}
+        />
+        <Card
+          quote="One of the best Neapolitan-style pizzas in Slovenia."
+          author={<>— Nejc F., Google &nbsp; <Stars /></>}
+        />
+      </div>
+    </section>
+  );
+}
 
+function Ambient() {
+  const cards = [
+    { src: ovenImg, label: "Peč", caption: "Ročna 3D keramika" },
+    { src: ingredientsImg, label: "Sestavine", caption: "San Marzano · Fior di latte" },
+    { src: barImg, label: "Bar", caption: "Smaragdna garnitura" },
+  ];
+  return (
+    <section id="interier" className="grid md:grid-cols-2 min-h-[80vh]">
+      <div className="bg-emerald text-cream p-10 md:p-20 flex items-center relative overflow-hidden">
+        <div className="absolute inset-0 marble-pattern-cream opacity-25 pointer-events-none" />
+        <div className="relative max-w-md reveal">
+          <p className="text-bronze tracking-wide-2 uppercase text-[11px] mb-6">Atmosfera</p>
+          <h2 className="serif text-cream leading-[1.05]" style={{ fontSize: "clamp(2.5rem, 5vw, 4rem)" }}>
+            Interier
+          </h2>
+          <span className="block hairline w-16 my-8" />
+          <p className="serif italic text-cream/80 text-lg md:text-xl leading-relaxed">
+            Ukrivljen kovinski pult. Smaragdna sedežna garnitura. Ročno izdelana 3D keramika ob peči — barve reke Soče.
+          </p>
+          <p className="mt-6 text-cream/55 text-sm tracking-wide leading-relaxed">
+            Nagrajeno arhitekturno delo studia Kreadom, 2020.
+          </p>
+        </div>
+      </div>
+      <div className="bg-[color:var(--muted)] p-6 md:p-10 grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-5 items-stretch">
+        {cards.map((c, i) => (
+          <figure
+            key={c.label}
+            className="reveal group relative overflow-hidden bg-emerald-deep"
+            style={{ aspectRatio: "4 / 5", transitionDelay: `${i * 120}ms` }}
+          >
+            <img
+              src={c.src}
+              alt={c.label}
+              loading="lazy"
+              width={1024}
+              height={1024}
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-emerald-deep/85 via-emerald-deep/15 to-transparent" />
+            <figcaption className="absolute inset-x-0 bottom-0 p-5 text-cream">
+              <span className="block hairline w-8 mb-3" />
+              <p className="serif text-xl leading-tight">{c.label}</p>
+              <p className="text-[11px] tracking-wide-2 uppercase text-cream/60 mt-1">{c.caption}</p>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Gallery() {
+  const tiles = [
+    { src: lec1.url, span: "md:col-span-2 md:row-span-2", ratio: "4 / 3", label: "Sala", size: "large" },
+    { src: lec5.url, span: "", ratio: "3 / 4", label: "Pizza", size: "small" },
+    { src: lec4.url, span: "", ratio: "3 / 4", label: "Bar", size: "small" },
+    { src: lec3.url, span: "md:row-span-2", ratio: "3 / 4", label: "Sladica", size: "tall" },
+    { src: lec2.url, span: "", ratio: "3 / 4", label: "Detajl", size: "small" },
+    { src: lec6.url, span: "md:col-span-2", ratio: "16 / 9", label: "Vhod", size: "wide" },
+  ];
+  return (
+    <section id="galerija" className="bg-cream py-28 md:py-40 px-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center reveal mb-16 md:mb-20">
+          <p className="text-bronze tracking-wide-2 uppercase text-[11px] mb-5">Galleria</p>
+          <h2 className="serif text-emerald" style={{ fontSize: "clamp(2.5rem, 6vw, 4.5rem)" }}>
+            Galerija
+          </h2>
+          <span className="block hairline w-16 mx-auto mt-8" />
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          {tiles.map((t, i) => (
+            <figure
+              key={i}
+              className={
+                "reveal relative overflow-hidden bg-emerald/10 group cursor-pointer " +
+                t.span
+              }
+              style={{ aspectRatio: t.ratio, transitionDelay: `${i * 100}ms` }}
+            >
+              <div className="absolute inset-0 overflow-hidden">
+                <img
+                  src={t.src}
+                  alt={`Le Cité — ${t.label}`}
+                  loading="lazy"
+                  className="h-full w-full object-cover transition-all duration-[1400ms] ease-[cubic-bezier(0.16,0.84,0.3,1)] group-hover:scale-110 group-hover:brightness-110"
+                />
+                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[1000ms] ease-out bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12 pointer-events-none" />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-emerald-deep/70 via-emerald-deep/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-out" />
+              <figcaption className="absolute left-0 right-0 bottom-0 p-4 md:p-5 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700 ease-[cubic-bezier(0.16,0.84,0.3,1)]">
+                <span className="block hairline w-8 mb-2" />
+                <span className="serif italic text-cream text-lg md:text-xl">{t.label}</span>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function LocationMap() {
+  return (
+    <section id="lokacija" className="bg-emerald text-cream py-28 md:py-40 px-6 relative overflow-hidden">
+      <div className="absolute inset-0 marble-pattern-cream opacity-20 pointer-events-none" />
+      <div className="relative max-w-6xl mx-auto">
+        <div className="text-center reveal mb-14 md:mb-20">
+          <p className="text-bronze tracking-wide-2 uppercase text-[11px] mb-5">Dove siamo</p>
+          <h2 className="serif text-cream" style={{ fontSize: "clamp(2.5rem, 6vw, 4.5rem)" }}>
+            Kje nas najdete
+          </h2>
+          <span className="block hairline w-16 mx-auto mt-8" />
+          <p className="mt-8 text-cream/75 serif italic text-lg">Bevkov trg, 5000 Nova Gorica</p>
+        </div>
+        <div className="reveal relative overflow-hidden border border-cream/10 shadow-2xl" style={{ aspectRatio: "16 / 9" }}>
+          <iframe
+            title="Le Cité — Bevkov trg, Nova Gorica"
+            src="https://www.google.com/maps?q=Bevkov+trg+Nova+Gorica&output=embed"
+            className="absolute inset-0 w-full h-full"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            style={{ border: 0, filter: "grayscale(0.3) contrast(1.05)" }}
+            allowFullScreen
+          />
+        </div>
+        <div className="reveal mt-10 flex flex-col sm:flex-row justify-center gap-4">
+          <a
+            href="https://www.google.com/maps/dir/?api=1&destination=Bevkov+trg+Nova+Gorica"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-3 bg-bronze text-cream px-8 py-4 text-[12px] tracking-wide-2 uppercase hover:bg-[color:var(--bronze-soft)] transition-colors"
+          >
+            <MapPin size={16} strokeWidth={1.6} />
+            Navodila za pot
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Reservation() {
   return (
     <section id="rezervacija" className="grid md:grid-cols-2 min-h-[90vh]">
       <div className="bg-emerald text-cream p-10 md:p-20 flex items-center relative overflow-hidden">
@@ -597,11 +579,9 @@ function Reservation() {
           </ul>
         </div>
       </div>
-
       <div className="bg-cream p-10 md:p-20 flex items-center">
         <div className="w-full max-w-md mx-auto reveal text-center md:text-left">
           <p className="text-bronze tracking-wide-2 uppercase text-[11px] mb-8">Pokličite</p>
-
           <a
             href="tel:+38659814129"
             className="serif text-emerald block leading-[0.95] hover:text-bronze transition-colors"
@@ -609,13 +589,10 @@ function Reservation() {
           >
             +386 5 981 4129
           </a>
-
           <span className="block hairline w-16 my-10 mx-auto md:mx-0" />
-
           <p className="text-foreground/65 leading-relaxed">
             Odgovorimo med delovnim časom. Povejte število gostov, dan in uro — in vam takoj potrdimo mizo.
           </p>
-
           <div className="mt-10 flex flex-col sm:flex-row gap-4">
             <a
               href="tel:+38659814129"
@@ -634,7 +611,6 @@ function Reservation() {
               WhatsApp
             </a>
           </div>
-
           <p className="mt-10 text-[11px] tracking-wide-2 uppercase text-foreground/40">
             Pon–Sob · 11:00–23:00
           </p>
