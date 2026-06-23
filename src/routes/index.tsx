@@ -54,10 +54,10 @@ function Page() {
       <Hero />
       <Intro />
       <Menu />
+      <DailyMenu />
       <Reviews />
       <Ambient />
       <Gallery />
-      <DailyMenu />
       <Reservation />
       <LocationMap />
 
