@@ -490,23 +490,27 @@ function DailyMenu() {
             // simple CSV split (no embedded commas expected)
             const [datum, kosilo, cena] = l.split(",");
             return {
-              datum: (datum ?? "").trim(),
+              datum: (datum ?? "").trim().replace(/[^0-9.]/g, ""),
               kosilo: (kosilo ?? "").trim(),
               cena: (cena ?? "").trim(),
             };
           })
           .filter((r) => r.datum && r.kosilo);
+console.log("Sheet podatki:", parsed);
+console.log("Iščem datum:", todayStr);  
         if (!cancelled) setRows(parsed);
       })
-      .catch(() => {
+      .catch(() => {   
         if (!cancelled) setError(true);
       });
     return () => {
       cancelled = true;
     };
   }, []);
-
-  const todays = (rows ?? []).filter((r) => r.datum === todayStr);
+console.log("Datum znaki:", rows?.[0]?.datum.split("").map(c => c.charCodeAt(0)));
+console.log("Today znaki:", todayStr.split("").map(c => c.charCodeAt(0)));
+  const todays = (rows ?? []).filter((r) => r.datum.trim() === todayStr.trim());
+console.log("Todays:", todays, "rows:", rows, "todayStr:", todayStr);
 
   return (
     <section id="dnevni-meni" className="bg-cream py-28 md:py-40 px-6">
@@ -542,13 +546,13 @@ function DailyMenu() {
             {todays.map((r, i) => (
               <article
                 key={i}
-                className="reveal relative border border-emerald/15 bg-cream p-8 md:p-10 hover:border-bronze/60 transition-colors group"
+                className="relative border border-emerald/15 bg-emerald p-8 md:p-10 hover:border-bronze/60 transition-colors group"
                 style={{ transitionDelay: `${i * 100}ms` }}
               >
                 <p className="text-bronze tracking-wide-2 uppercase text-[11px] mb-4">
                   Ponudba {i + 1}
                 </p>
-                <h3 className="serif text-emerald text-2xl md:text-3xl leading-tight">
+                <h3 className="serif text-cream text-2xl md:text-3xl leading-tight">
                   {r.kosilo}
                 </h3>
                 <span className="block hairline w-10 my-6" />
