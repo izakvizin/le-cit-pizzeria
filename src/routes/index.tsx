@@ -460,7 +460,114 @@ function LocationMap() {
 }
 
 
+function DailyMenu() {
+  const CSV_URL =
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vSl8alM2i6Cpz5jor_2vavuDLsWIxbjrL-UKrfdWFmEwAlALP1MG5e1m7Hg6ARC7yxHgCn-vTovVvVm/pub?gid=0&single=true&output=csv";
+
+  type Row = { datum: string; kosilo: string; cena: string };
+  const [rows, setRows] = useState<Row[] | null>(null);
+  const [error, setError] = useState(false);
+
+  const today = new Date();
+  const todayStr = `${String(today.getDate()).padStart(2, "0")}.${String(
+    today.getMonth() + 1
+  ).padStart(2, "0")}.${today.getFullYear()}`;
+  const todayLabel = today.toLocaleDateString("sl-SI", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${CSV_URL}&_=${Date.now()}`, { cache: "no-store" })
+      .then((r) => r.text())
+      .then((text) => {
+        const lines = text.trim().split(/\r?\n/).slice(1);
+        const parsed: Row[] = lines
+          .map((l) => {
+            // simple CSV split (no embedded commas expected)
+            const [datum, kosilo, cena] = l.split(",");
+            return {
+              datum: (datum ?? "").trim(),
+              kosilo: (kosilo ?? "").trim(),
+              cena: (cena ?? "").trim(),
+            };
+          })
+          .filter((r) => r.datum && r.kosilo);
+        if (!cancelled) setRows(parsed);
+      })
+      .catch(() => {
+        if (!cancelled) setError(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const todays = (rows ?? []).filter((r) => r.datum === todayStr);
+
+  return (
+    <section id="dnevni-meni" className="bg-cream py-28 md:py-40 px-6">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center reveal mb-14 md:mb-20">
+          <p className="text-bronze tracking-wide-2 uppercase text-[11px] mb-5">
+            Menu del giorno
+          </p>
+          <h2
+            className="serif text-emerald"
+            style={{ fontSize: "clamp(2.5rem, 6vw, 4.5rem)" }}
+          >
+            Dnevni meni
+          </h2>
+          <span className="block hairline w-16 mx-auto mt-8" />
+          <p className="mt-6 serif italic text-emerald/70 text-lg capitalize">
+            {todayLabel}
+          </p>
+        </div>
+
+        {rows === null && !error && (
+          <p className="text-center text-emerald/60 serif italic">Nalagam…</p>
+        )}
+
+        {(error || (rows !== null && todays.length === 0)) && (
+          <p className="text-center text-emerald/70 serif italic text-lg md:text-xl">
+            Dnevni meni bo kmalu objavljen.
+          </p>
+        )}
+
+        {todays.length > 0 && (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            {todays.map((r, i) => (
+              <article
+                key={i}
+                className="reveal relative border border-emerald/15 bg-cream p-8 md:p-10 hover:border-bronze/60 transition-colors group"
+                style={{ transitionDelay: `${i * 100}ms` }}
+              >
+                <p className="text-bronze tracking-wide-2 uppercase text-[11px] mb-4">
+                  Ponudba {i + 1}
+                </p>
+                <h3 className="serif text-emerald text-2xl md:text-3xl leading-tight">
+                  {r.kosilo}
+                </h3>
+                <span className="block hairline w-10 my-6" />
+                {r.cena && (
+                  <p className="text-bronze text-lg tabular-nums">
+                    {r.cena} €
+                  </p>
+                )}
+              </article>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
 function Reservation() {
+
   return (
     <section id="rezervacija" className="grid md:grid-cols-2 min-h-[90vh]">
       <div className="bg-emerald text-cream p-10 md:p-20 flex items-center relative overflow-hidden">
