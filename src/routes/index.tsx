@@ -57,8 +57,10 @@ function Page() {
       <Reviews />
       <Ambient />
       <Gallery />
+      <DailyMenu />
       <Reservation />
       <LocationMap />
+
       <Footer />
     </div>
   );
