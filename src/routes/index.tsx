@@ -11,12 +11,12 @@ import { LANGS, LangProvider, useLang, type Text } from "@/lib/i18n";
 import ovenImg from "@/assets/le-cite-oven.jpg";
 import ingredientsImg from "@/assets/le-cite-ingredients.jpg";
 import barImg from "@/assets/le-cite-bar.jpg";
-import lec1 from "@/assets/gallery/lec1.jpg.asset.json";
-import lec2 from "@/assets/gallery/lec2.jpg.asset.json";
-import lec3 from "@/assets/gallery/lec3.jpg.asset.json";
-import lec4 from "@/assets/gallery/lec4.jpg.asset.json";
-import lec5 from "@/assets/gallery/lec5.jpg.asset.json";
-import lec6 from "@/assets/gallery/lec6.jpg.asset.json";
+import lec1 from "@/assets/gallery/lec1.jpg";
+import lec2 from "@/assets/gallery/lec2.jpg";
+import lec3 from "@/assets/gallery/lec3.jpg";
+import lec4 from "@/assets/gallery/lec4.jpg";
+import lec5 from "@/assets/gallery/lec5.jpg";
+import lec6 from "@/assets/gallery/lec6.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -137,7 +137,7 @@ function Nav() {
         <a href="#top" className="serif text-cream text-xl md:text-2xl tracking-display">
           LE CITÉ
         </a>
-        <div className="hidden md:flex items-center gap-10 text-[13px] tracking-wide-2 uppercase text-cream/85">
+        <div className="hidden lg:flex items-center gap-10 text-[13px] tracking-wide-2 uppercase text-cream/85">
           <a href="#jedilnik" className="hover:text-cream transition-colors">
             {t({ sl: "Jedilnik", it: "Menu", en: "Menu" })}
           </a>
@@ -161,7 +161,7 @@ function Nav() {
           </a>
           <LanguageSwitcher />
         </div>
-        <div className="md:hidden flex items-center gap-5 text-[12px] text-cream/85">
+        <div className="lg:hidden flex items-center gap-5 text-[12px] text-cream/85">
           <LanguageSwitcher />
           <a
             href="#rezervacija"
@@ -683,7 +683,7 @@ function Ambient() {
     },
   ];
   return (
-    <section id="interier" className="grid md:grid-cols-2 min-h-[80vh]">
+    <section id="interier" className="grid lg:grid-cols-2 min-h-[80vh]">
       <div className="bg-emerald text-cream p-10 md:p-20 flex items-center relative overflow-hidden">
         <div className="absolute inset-0 marble-pattern-cream opacity-25 pointer-events-none" />
         <div className="relative max-w-md reveal">
@@ -708,12 +708,14 @@ function Ambient() {
           </p>
         </div>
       </div>
+      {/* Cards keep 4:5 while this panel is full width; from lg up they stretch to the panel's
+          height instead (a fixed ratio there made them wider than their column, so they overlapped). */}
       <div className="bg-[color:var(--muted)] p-6 md:p-10 grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-5 items-stretch">
         {cards.map((c, i) => (
           <figure
             key={c.label.sl}
-            className="reveal group relative overflow-hidden bg-emerald-deep"
-            style={{ aspectRatio: "4 / 5", transitionDelay: `${i * 120}ms` }}
+            className="reveal group relative overflow-hidden bg-emerald-deep aspect-[4/5] lg:aspect-auto"
+            style={{ transitionDelay: `${i * 120}ms` }}
           >
             <img
               src={c.src}
@@ -738,13 +740,14 @@ function Ambient() {
 
 function Gallery() {
   const { t } = useLang();
-  const tiles: { src: string; span: string; ratio: string; label: Text; size: string }[] = [
-    { src: lec1.url, span: "md:col-span-2 md:row-span-2", ratio: "4 / 3", label: { sl: "Sala", it: "Sala", en: "Dining room" }, size: "large" },
-    { src: lec5.url, span: "", ratio: "3 / 4", label: { sl: "Pizza", it: "Pizza", en: "Pizza" }, size: "small" },
-    { src: lec4.url, span: "", ratio: "3 / 4", label: { sl: "Bar", it: "Bar", en: "Bar" }, size: "small" },
-    { src: lec3.url, span: "md:row-span-2", ratio: "3 / 4", label: { sl: "Sladica", it: "Dolce", en: "Dessert" }, size: "tall" },
-    { src: lec2.url, span: "", ratio: "3 / 4", label: { sl: "Detajl", it: "Dettaglio", en: "Detail" }, size: "small" },
-    { src: lec6.url, span: "md:col-span-2", ratio: "16 / 9", label: { sl: "Vhod", it: "Ingresso", en: "Entrance" }, size: "wide" },
+  // Spans fill the grid with no holes: 2 columns on phones, 4 from md up (3 rows of equal height).
+  const tiles: { src: string; span: string; label: Text }[] = [
+    { src: lec1, span: "col-span-2 row-span-2", label: { sl: "Sala", it: "Sala", en: "Dining room" } },
+    { src: lec5, span: "row-span-2", label: { sl: "Pizza", it: "Pizza", en: "Pizza" } },
+    { src: lec6, span: "row-span-2", label: { sl: "Vhod", it: "Ingresso", en: "Entrance" } },
+    { src: lec2, span: "col-span-2", label: { sl: "Detajl", it: "Dettaglio", en: "Detail" } },
+    { src: lec3, span: "", label: { sl: "Sladica", it: "Dolce", en: "Dessert" } },
+    { src: lec4, span: "", label: { sl: "Bar", it: "Bar", en: "Bar" } },
   ];
   return (
     <section id="galerija" className="bg-cream py-28 md:py-40 px-6">
@@ -758,7 +761,7 @@ function Gallery() {
           </h2>
           <span className="block hairline w-16 mx-auto mt-8" />
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 auto-rows-[160px] sm:auto-rows-[200px] md:auto-rows-[170px] lg:auto-rows-[210px] xl:auto-rows-[240px] gap-3 md:gap-4">
           {tiles.map((tile, i) => (
             <figure
               key={i}
@@ -766,7 +769,7 @@ function Gallery() {
                 "reveal relative overflow-hidden bg-emerald/10 group cursor-pointer " +
                 tile.span
               }
-              style={{ aspectRatio: tile.ratio, transitionDelay: `${i * 100}ms` }}
+              style={{ transitionDelay: `${i * 100}ms` }}
             >
               <div className="absolute inset-0 overflow-hidden">
                 <img
