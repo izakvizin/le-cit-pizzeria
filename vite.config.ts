@@ -12,4 +12,11 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  // Build a Cloudflare Worker outside Lovable too (Lovable's own build already uses exactly these
+  // settings), so `npm run build` + `npx wrangler deploy` can host the site on any domain.
+  nitro: {
+    preset: "cloudflare-module",
+    output: { dir: "dist", serverDir: "dist/server", publicDir: "dist/client" },
+    cloudflare: { nodeCompat: true, deployConfig: true },
+  },
 });
