@@ -1,6 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Instagram, MapPin, Phone, MessageCircle } from "lucide-react";
+import { Instagram, MapPin, Phone, MessageCircle, ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { LANGS, LangProvider, useLang, type Text } from "@/lib/i18n";
 import ovenImg from "@/assets/le-cite-oven.jpg";
 import ingredientsImg from "@/assets/le-cite-ingredients.jpg";
 import barImg from "@/assets/le-cite-bar.jpg";
@@ -20,8 +27,18 @@ export const Route = createFileRoute("/")({
       { property: "og:description", content: "Picerija napoletanskega stila na Bevkovem trgu v Novi Gorici." },
     ],
   }),
-  component: Page,
+  component: LocalizedPage,
 });
+
+// The provider sits above Page so a language change re-renders only the sections
+// that read it — Page itself never re-renders, so revealed (.reveal.in) blocks stay visible.
+function LocalizedPage() {
+  return (
+    <LangProvider>
+      <Page />
+    </LangProvider>
+  );
+}
 
 function useReveal() {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -65,7 +82,41 @@ function Page() {
   );
 }
 
+function LanguageSwitcher() {
+  const { lang, setLang } = useLang();
+  return (
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger
+        aria-label="Jezik · Lingua · Language"
+        className="inline-flex items-center gap-1.5 uppercase tracking-wide-2 outline-none hover:text-cream focus-visible:text-cream transition-colors"
+      >
+        {lang}
+        <ChevronDown size={14} strokeWidth={1.6} />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        sideOffset={14}
+        className="min-w-[10rem] rounded-none border-white/10 bg-[color:var(--emerald-deep)] p-1 shadow-2xl"
+      >
+        {LANGS.map((l) => (
+          <DropdownMenuItem
+            key={l.code}
+            onSelect={() => setLang(l.code)}
+            className={
+              "rounded-none px-3 py-2.5 text-[12px] tracking-wide-2 uppercase cursor-pointer " +
+              (lang === l.code ? "text-bronze" : "text-cream/80")
+            }
+          >
+            {l.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 function Nav() {
+  const { t } = useLang();
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const on = () => setScrolled(window.scrollY > 32);
@@ -87,30 +138,45 @@ function Nav() {
           LE CITÉ
         </a>
         <div className="hidden md:flex items-center gap-10 text-[13px] tracking-wide-2 uppercase text-cream/85">
-          <a href="#jedilnik" className="hover:text-cream transition-colors">Jedilnik</a>
-          <a href="#interier" className="hover:text-cream transition-colors">O nas</a>
-          <a href="#galerija" className="hover:text-cream transition-colors">Galerija</a>
-          <a href="#lokacija" className="hover:text-cream transition-colors">Lokacija</a>
-          <a href="#rezervacija" className="hover:text-cream transition-colors">Kontakt</a>
+          <a href="#jedilnik" className="hover:text-cream transition-colors">
+            {t({ sl: "Jedilnik", it: "Menu", en: "Menu" })}
+          </a>
+          <a href="#interier" className="hover:text-cream transition-colors">
+            {t({ sl: "O nas", it: "Chi siamo", en: "About" })}
+          </a>
+          <a href="#galerija" className="hover:text-cream transition-colors">
+            {t({ sl: "Galerija", it: "Galleria", en: "Gallery" })}
+          </a>
+          <a href="#lokacija" className="hover:text-cream transition-colors">
+            {t({ sl: "Lokacija", it: "Posizione", en: "Location" })}
+          </a>
+          <a href="#rezervacija" className="hover:text-cream transition-colors">
+            {t({ sl: "Kontakt", it: "Contatti", en: "Contact" })}
+          </a>
           <a
             href="#rezervacija"
             className="border border-bronze text-cream px-5 py-2.5 hover:bg-bronze transition-colors"
           >
-            Rezerviraj
+            {t({ sl: "Rezerviraj", it: "Prenota", en: "Book" })}
+          </a>
+          <LanguageSwitcher />
+        </div>
+        <div className="md:hidden flex items-center gap-5 text-[12px] text-cream/85">
+          <LanguageSwitcher />
+          <a
+            href="#rezervacija"
+            className="border border-bronze text-cream px-4 py-2 text-[12px] tracking-wide-2 uppercase"
+          >
+            {t({ sl: "Rezerviraj", it: "Prenota", en: "Book" })}
           </a>
         </div>
-        <a
-          href="#rezervacija"
-          className="md:hidden border border-bronze text-cream px-4 py-2 text-[12px] tracking-wide-2 uppercase"
-        >
-          Rezerviraj
-        </a>
       </div>
     </nav>
   );
 }
 
 function Hero() {
+  const { t } = useLang();
   return (
     <section
       id="top"
@@ -141,7 +207,11 @@ function Hero() {
         </div>
         <div className="reveal" style={{ transitionDelay: "650ms" }}>
           <p className="text-cream/70 text-sm md:text-base">
-            Pristna neapeljska pica v središču Nove Gorice. Rezervirajte mizo in okusite vrhunske sestavine v Le Cité.
+            {t({
+              sl: "Pristna neapeljska pica v središču Nove Gorice. Rezervirajte mizo in okusite vrhunske sestavine v Le Cité.",
+              it: "Autentica pizza napoletana nel cuore di Nova Gorica. Prenotate un tavolo e assaporate ingredienti di prima qualità da Le Cité.",
+              en: "Authentic Neapolitan pizza in the heart of Nova Gorica. Book a table and taste premium ingredients at Le Cité.",
+            })}
           </p>
         </div>
         <div className="reveal mt-12 flex flex-col sm:flex-row justify-center gap-4" style={{ transitionDelay: "850ms" }}>
@@ -149,13 +219,13 @@ function Hero() {
             href="#jedilnik"
             className="border border-cream/80 text-cream px-8 py-4 text-[12px] tracking-wide-2 uppercase hover:bg-cream hover:text-emerald transition-colors"
           >
-            Poglej jedilnik
+            {t({ sl: "Poglej jedilnik", it: "Vedi il menu", en: "View menu" })}
           </a>
           <a
             href="#rezervacija"
             className="bg-bronze text-cream px-8 py-4 text-[12px] tracking-wide-2 uppercase hover:bg-[color:var(--bronze-soft)] transition-colors"
           >
-            Rezerviraj mizo
+            {t({ sl: "Rezerviraj mizo", it: "Prenota un tavolo", en: "Book a table" })}
           </a>
         </div>
       </div>
@@ -164,6 +234,7 @@ function Hero() {
 }
 
 function Intro() {
+  const { t } = useLang();
   return (
     <section className="bg-cream py-32 md:py-48 px-6">
       <div className="max-w-4xl mx-auto text-center reveal">
@@ -171,44 +242,167 @@ function Intro() {
           className="serif italic text-emerald leading-[1.25]"
           style={{ fontSize: "clamp(1.75rem, 4.2vw, 3.25rem)" }}
         >
-          „Vsako testo počiva. Vsaka sestavina je izbrana. Vsaka pica je razlog za vrnitev."
+          {t({
+            sl: "„Vsako testo počiva. Vsaka sestavina je izbrana. Vsaka pica je razlog za vrnitev.\"",
+            it: "“Ogni impasto riposa. Ogni ingrediente è scelto. Ogni pizza è un motivo per tornare.”",
+            en: "“Every dough rests. Every ingredient is chosen. Every pizza is a reason to come back.”",
+          })}
         </p>
       </div>
     </section>
   );
 }
 
-type Dish = { name: string; desc?: string; price?: string; gf?: boolean };
-const MENU: Record<string, Dish[]> = {
-  Pizza: [
-    { name: "Margherita", desc: "Paradižnikova omaka San Marzano, fior di latte, sveža bazilika", price: "12 €" },
-    { name: "Marinara", desc: "Paradižnik, česen, origano, oljčno olje", price: "11 €" },
-    { name: "Diavola", desc: "Salama piccante, paradižnikova omaka, mozzarella", price: "14 €" },
-    { name: "Crudo di Parma", desc: "Parška šunka, rukola, parmigiano reggiano", price: "16 €" },
-    { name: "Quattro Formaggi", desc: "Štirje siri, kapljica medu", price: "15 €" },
-    { name: "Burrata", desc: "Cherry paradižniki, sveža burrata, bazilika, oljčno olje", price: "17 €" },
-    { name: "Vegetariana", desc: "Sezonska zelenjava, mozzarella, pesto", price: "14 €", gf: true },
-  ],
-  Testenine: [
-    { name: "Spaghetti aglio e olio", desc: "Česen, oljčno olje, peperoncino, peteršilj", price: "13 €" },
-    { name: "Tagliatelle al ragù", desc: "Počasi kuhano meso, paradižnik, rdeče vino", price: "15 €" },
-    { name: "Penne all'arrabbiata", desc: "Pikantna paradižnikova omaka, česen", price: "12 €" },
-  ],
-  Pijače: [
-    { name: "Vina", desc: "Bela, rdeča, rosé — po kozarcu ali steklenici" },
-    { name: "Piva", desc: "Točeno, steklenica" },
-    { name: "Kava", desc: "Espresso, macchiato, cappuccino" },
-    { name: "Brezalkoholno", desc: "Sokovi, mineralna voda, limonada" },
-  ],
-  Sladice: [
-    { name: "Tiramisu", price: "6 €" },
-    { name: "Panna cotta", price: "5 €" },
-  ],
-};
+type Dish = { name: string | Text; desc?: string | Text; price?: string; gf?: boolean };
+type MenuCategory = { id: string; label: Text; dishes: Dish[] };
+const MENU: MenuCategory[] = [
+  {
+    id: "pizza",
+    label: { sl: "Pizza", it: "Pizza", en: "Pizza" },
+    dishes: [
+      {
+        name: "Margherita",
+        desc: {
+          sl: "Paradižnikova omaka San Marzano, fior di latte, sveža bazilika",
+          it: "Salsa di pomodoro San Marzano, fior di latte, basilico fresco",
+          en: "San Marzano tomato sauce, fior di latte, fresh basil",
+        },
+        price: "12 €",
+      },
+      {
+        name: "Marinara",
+        desc: {
+          sl: "Paradižnik, česen, origano, oljčno olje",
+          it: "Pomodoro, aglio, origano, olio d'oliva",
+          en: "Tomato, garlic, oregano, olive oil",
+        },
+        price: "11 €",
+      },
+      {
+        name: "Diavola",
+        desc: {
+          sl: "Salama piccante, paradižnikova omaka, mozzarella",
+          it: "Salame piccante, salsa di pomodoro, mozzarella",
+          en: "Spicy salami, tomato sauce, mozzarella",
+        },
+        price: "14 €",
+      },
+      {
+        name: "Crudo di Parma",
+        desc: {
+          sl: "Parška šunka, rukola, parmigiano reggiano",
+          it: "Prosciutto di Parma, rucola, parmigiano reggiano",
+          en: "Parma ham, rocket, parmigiano reggiano",
+        },
+        price: "16 €",
+      },
+      {
+        name: "Quattro Formaggi",
+        desc: {
+          sl: "Štirje siri, kapljica medu",
+          it: "Quattro formaggi, un filo di miele",
+          en: "Four cheeses, a drizzle of honey",
+        },
+        price: "15 €",
+      },
+      {
+        name: "Burrata",
+        desc: {
+          sl: "Cherry paradižniki, sveža burrata, bazilika, oljčno olje",
+          it: "Pomodorini ciliegino, burrata fresca, basilico, olio d'oliva",
+          en: "Cherry tomatoes, fresh burrata, basil, olive oil",
+        },
+        price: "17 €",
+      },
+      {
+        name: "Vegetariana",
+        desc: {
+          sl: "Sezonska zelenjava, mozzarella, pesto",
+          it: "Verdure di stagione, mozzarella, pesto",
+          en: "Seasonal vegetables, mozzarella, pesto",
+        },
+        price: "14 €",
+        gf: true,
+      },
+    ],
+  },
+  {
+    id: "pasta",
+    label: { sl: "Testenine", it: "Pasta", en: "Pasta" },
+    dishes: [
+      {
+        name: "Spaghetti aglio e olio",
+        desc: {
+          sl: "Česen, oljčno olje, peperoncino, peteršilj",
+          it: "Aglio, olio d'oliva, peperoncino, prezzemolo",
+          en: "Garlic, olive oil, chilli, parsley",
+        },
+        price: "13 €",
+      },
+      {
+        name: "Tagliatelle al ragù",
+        desc: {
+          sl: "Počasi kuhano meso, paradižnik, rdeče vino",
+          it: "Carne cotta lentamente, pomodoro, vino rosso",
+          en: "Slow-cooked meat, tomato, red wine",
+        },
+        price: "15 €",
+      },
+      {
+        name: "Penne all'arrabbiata",
+        desc: {
+          sl: "Pikantna paradižnikova omaka, česen",
+          it: "Salsa di pomodoro piccante, aglio",
+          en: "Spicy tomato sauce, garlic",
+        },
+        price: "12 €",
+      },
+    ],
+  },
+  {
+    id: "drinks",
+    label: { sl: "Pijače", it: "Bevande", en: "Drinks" },
+    dishes: [
+      {
+        name: { sl: "Vina", it: "Vini", en: "Wines" },
+        desc: {
+          sl: "Bela, rdeča, rosé — po kozarcu ali steklenici",
+          it: "Bianchi, rossi, rosé — al calice o in bottiglia",
+          en: "White, red, rosé — by the glass or bottle",
+        },
+      },
+      {
+        name: { sl: "Piva", it: "Birre", en: "Beers" },
+        desc: { sl: "Točeno, steklenica", it: "Alla spina, in bottiglia", en: "Draught, bottled" },
+      },
+      {
+        name: { sl: "Kava", it: "Caffè", en: "Coffee" },
+        desc: "Espresso, macchiato, cappuccino",
+      },
+      {
+        name: { sl: "Brezalkoholno", it: "Analcolici", en: "Soft drinks" },
+        desc: {
+          sl: "Sokovi, mineralna voda, limonada",
+          it: "Succhi, acqua minerale, limonata",
+          en: "Juices, mineral water, lemonade",
+        },
+      },
+    ],
+  },
+  {
+    id: "desserts",
+    label: { sl: "Sladice", it: "Dolci", en: "Desserts" },
+    dishes: [
+      { name: "Tiramisu", price: "6 €" },
+      { name: "Panna cotta", price: "5 €" },
+    ],
+  },
+];
 
 function Menu() {
-  const tabs = Object.keys(MENU);
-  const [active, setActive] = useState(tabs[0]);
+  const { t } = useLang();
+  const [active, setActive] = useState(MENU[0].id);
+  const dishes = MENU.find((c) => c.id === active)?.dishes ?? [];
   return (
     <section id="jedilnik" className="bg-emerald text-cream py-28 md:py-40 px-6 relative overflow-hidden">
       <div className="absolute inset-0 marble-pattern-cream opacity-30 pointer-events-none" />
@@ -216,38 +410,38 @@ function Menu() {
         <div className="text-center reveal">
           <p className="text-bronze tracking-wide-2 uppercase text-[11px] mb-5">La carta</p>
           <h2 className="serif text-cream" style={{ fontSize: "clamp(2.5rem, 6vw, 4.5rem)" }}>
-            Jedilnik
+            {t({ sl: "Jedilnik", it: "Menu", en: "Menu" })}
           </h2>
         </div>
         <div className="mt-16 flex flex-wrap justify-center gap-8 md:gap-12 reveal">
-          {tabs.map((t) => (
+          {MENU.map((c) => (
             <button
-              key={t}
-              onClick={() => setActive(t)}
+              key={c.id}
+              onClick={() => setActive(c.id)}
               className={
                 "relative pb-2 text-[12px] md:text-sm tracking-wide-2 uppercase transition-colors " +
-                (active === t ? "text-cream" : "text-cream/55 hover:text-cream/85")
+                (active === c.id ? "text-cream" : "text-cream/55 hover:text-cream/85")
               }
             >
-              {t}
+              {t(c.label)}
               <span
                 className={
                   "absolute left-0 right-0 -bottom-0 h-px bg-bronze transition-transform duration-500 origin-left " +
-                  (active === t ? "scale-x-100" : "scale-x-0")
+                  (active === c.id ? "scale-x-100" : "scale-x-0")
                 }
               />
             </button>
           ))}
         </div>
         <ul className="mt-16 divide-y divide-cream/10">
-          {MENU[active].map((d) => (
+          {dishes.map((d, i) => (
             <li
-              key={d.name}
+              key={`${active}-${i}`}
               className="group grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-6 py-6 transition-colors hover:bg-cream/[0.03] px-2 -mx-2"
             >
               <div className="min-w-0">
                 <div className="flex items-baseline gap-3 flex-wrap">
-                  <h3 className="text-cream text-base md:text-lg font-medium">{d.name}</h3>
+                  <h3 className="text-cream text-base md:text-lg font-medium">{t(d.name)}</h3>
                   {d.gf && (
                     <span className="text-[10px] tracking-wide-2 uppercase text-bronze border border-bronze/40 px-1.5 py-0.5">
                       GF
@@ -256,7 +450,7 @@ function Menu() {
                 </div>
                 {d.desc && (
                   <p className="serif italic text-cream/55 text-sm md:text-[15px] mt-1.5 leading-snug">
-                    {d.desc}
+                    {t(d.desc)}
                   </p>
                 )}
               </div>
@@ -267,26 +461,62 @@ function Menu() {
           ))}
         </ul>
         <p className="mt-10 text-center text-cream/45 text-[12px] tracking-wide-2 uppercase reveal">
-          Brezglutenske različice na zahtevo
+          {t({
+            sl: "Brezglutenske različice na zahtevo",
+            it: "Versioni senza glutine su richiesta",
+            en: "Gluten-free versions on request",
+          })}
         </p>
       </div>
     </section>
   );
 }
 
-function DailyMenu() {
-  const CSV_URL =
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vSl8alM2i6Cpz5jor_2vavuDLsWIxbjrL-UKrfdWFmEwAlALP1MG5e1m7Hg6ARC7yxHgCn-vTovVvVm/pub?gid=0&single=true&output=csv";
+// Google Sheets quotes cells that contain commas ("Juha, solata"), so a plain split(",") is not enough.
+function splitCsvLine(line: string): string[] {
+  const cells: string[] = [];
+  let cell = "";
+  let quoted = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (quoted) {
+      if (ch === '"' && line[i + 1] === '"') {
+        cell += '"';
+        i++;
+      } else if (ch === '"') {
+        quoted = false;
+      } else {
+        cell += ch;
+      }
+    } else if (ch === '"') {
+      quoted = true;
+    } else if (ch === ",") {
+      cells.push(cell);
+      cell = "";
+    } else {
+      cell += ch;
+    }
+  }
+  cells.push(cell);
+  return cells;
+}
 
-  type Row = { datum: string; kosilo: string; cena: string };
+function DailyMenu() {
+  // Tab "za-splet" of the Google Sheet "Le Cité – dnevni meni" (shared as "anyone with the link can view").
+  const CSV_URL =
+    "https://docs.google.com/spreadsheets/d/1cOAhHjLshG1Un32UQbC2mPVQhjTtF_hQYpMc2DUd0yw/gviz/tq?tqx=out:csv&headers=1&sheet=za-splet";
+
+  // Optional sheet columns "kosilo_it" / "kosilo_en" translate the dish; empty cells fall back to "kosilo".
+  type Row = { datum: string; kosilo: Text; cena: string };
+  const { lang, t } = useLang();
   const [rows, setRows] = useState<Row[] | null>(null);
   const [error, setError] = useState(false);
 
   const today = new Date();
-  const todayStr = `${String(today.getDate()).padStart(2, "0")}.${String(
-    today.getMonth() + 1
-  ).padStart(2, "0")}.${today.getFullYear()}`;
-  const todayLabel = today.toLocaleDateString("sl-SI", {
+  // Compared without leading zeros, so "08.10.2026", "8.10.2026" and "8. 10. 2026" all match.
+  const todayStr = `${today.getDate()}.${today.getMonth() + 1}.${today.getFullYear()}`;
+  const locale = LANGS.find((l) => l.code === lang)?.locale ?? "sl-SI";
+  const todayLabel = today.toLocaleDateString(locale, {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -298,17 +528,34 @@ function DailyMenu() {
     fetch(`${CSV_URL}&_=${Date.now()}`, { cache: "no-store" })
       .then((r) => r.text())
       .then((text) => {
-        const lines = text.trim().split(/\r?\n/).slice(1);
+        const [header = "", ...lines] = text.trim().split(/\r?\n/);
+        const cols = splitCsvLine(header).map((h) => h.toLowerCase().replace(/[^a-z_]/g, ""));
+        const col = (name: string, fallback: number) => {
+          const i = cols.indexOf(name);
+          return i === -1 ? fallback : i;
+        };
+        const iDatum = col("datum", 0);
+        const iKosilo = col("kosilo", 1);
+        const iCena = col("cena", 2);
+        const iIt = col("kosilo_it", -1);
+        const iEn = col("kosilo_en", -1);
         const parsed: Row[] = lines
           .map((l) => {
-            const [datum, kosilo, cena] = l.split(",");
+            const cells = splitCsvLine(l);
+            const cell = (i: number) => (i < 0 ? "" : (cells[i] ?? "").trim());
+            const sl = cell(iKosilo);
             return {
-              datum: (datum ?? "").replace(/[^0-9.]/g, "").trim(),
-              kosilo: (kosilo ?? "").trim(),
-              cena: (cena ?? "").trim(),
+              datum: cell(iDatum)
+                .split(".")
+                .map((p) => p.replace(/\D/g, ""))
+                .filter(Boolean)
+                .map(Number)
+                .join("."),
+              kosilo: { sl, it: cell(iIt) || sl, en: cell(iEn) || sl },
+              cena: cell(iCena).replace(/€/g, "").trim(), // the site adds "€" itself
             };
           })
-          .filter((r) => r.datum && r.kosilo);
+          .filter((r) => r.datum && r.kosilo.sl);
         if (!cancelled) setRows(parsed);
       })
       .catch(() => {
@@ -332,7 +579,7 @@ function DailyMenu() {
             className="serif text-emerald"
             style={{ fontSize: "clamp(2.5rem, 6vw, 4.5rem)" }}
           >
-            Dnevni meni
+            {t({ sl: "Dnevni meni", it: "Pranzo del giorno", en: "Daily menu" })}
           </h2>
           <span className="block hairline w-16 mx-auto mt-8" />
           <p className="mt-6 serif italic text-emerald/70 text-lg capitalize">
@@ -341,12 +588,18 @@ function DailyMenu() {
         </div>
 
         {rows === null && !error && (
-          <p className="text-center text-emerald/60 serif italic">Nalagam…</p>
+          <p className="text-center text-emerald/60 serif italic">
+            {t({ sl: "Nalagam…", it: "Caricamento…", en: "Loading…" })}
+          </p>
         )}
 
         {(error || (rows !== null && todays.length === 0)) && (
           <p className="text-center text-emerald/70 serif italic text-lg md:text-xl">
-            Dnevni meni bo kmalu objavljen.
+            {t({
+              sl: "Dnevni meni bo kmalu objavljen.",
+              it: "Il menu del giorno sarà pubblicato a breve.",
+              en: "Today's menu will be published soon.",
+            })}
           </p>
         )}
 
@@ -359,10 +612,10 @@ function DailyMenu() {
                 style={{ transitionDelay: `${i * 100}ms` }}
               >
                 <p className="text-bronze tracking-wide-2 uppercase text-[11px] mb-4">
-                  Ponudba {i + 1}
+                  {t({ sl: "Ponudba", it: "Proposta", en: "Option" })} {i + 1}
                 </p>
                 <h3 className="serif text-cream text-2xl md:text-3xl leading-tight">
-                  {r.kosilo}
+                  {t(r.kosilo)}
                 </h3>
                 <span className="block hairline w-10 my-6" />
                 {r.cena && (
@@ -411,10 +664,23 @@ function Reviews() {
 }
 
 function Ambient() {
-  const cards = [
-    { src: ovenImg, label: "Peč", caption: "Ročna 3D keramika" },
-    { src: ingredientsImg, label: "Sestavine", caption: "San Marzano · Fior di latte" },
-    { src: barImg, label: "Bar", caption: "Smaragdna garnitura" },
+  const { t } = useLang();
+  const cards: { src: string; label: Text; caption: string | Text }[] = [
+    {
+      src: ovenImg,
+      label: { sl: "Peč", it: "Forno", en: "Oven" },
+      caption: { sl: "Ročna 3D keramika", it: "Ceramica 3D fatta a mano", en: "Handmade 3D ceramics" },
+    },
+    {
+      src: ingredientsImg,
+      label: { sl: "Sestavine", it: "Ingredienti", en: "Ingredients" },
+      caption: "San Marzano · Fior di latte",
+    },
+    {
+      src: barImg,
+      label: { sl: "Bar", it: "Bar", en: "Bar" },
+      caption: { sl: "Smaragdna garnitura", it: "Divani color smeraldo", en: "Emerald seating" },
+    },
   ];
   return (
     <section id="interier" className="grid md:grid-cols-2 min-h-[80vh]">
@@ -423,27 +689,35 @@ function Ambient() {
         <div className="relative max-w-md reveal">
           <p className="text-bronze tracking-wide-2 uppercase text-[11px] mb-6">Atmosfera</p>
           <h2 className="serif text-cream leading-[1.05]" style={{ fontSize: "clamp(2.5rem, 5vw, 4rem)" }}>
-            Interier
+            {t({ sl: "Interier", it: "Interni", en: "Interior" })}
           </h2>
           <span className="block hairline w-16 my-8" />
           <p className="serif italic text-cream/80 text-lg md:text-xl leading-relaxed">
-            Ukrivljen kovinski pult. Smaragdna sedežna garnitura. Ročno izdelana 3D keramika ob peči — barve reke Soče.
+            {t({
+              sl: "Ukrivljen kovinski pult. Smaragdna sedežna garnitura. Ročno izdelana 3D keramika ob peči — barve reke Soče.",
+              it: "Un bancone curvo in metallo. Divani color smeraldo. Ceramica 3D fatta a mano accanto al forno — i colori dell'Isonzo.",
+              en: "A curved metal counter. Emerald seating. Handmade 3D ceramics by the oven — the colours of the Soča river.",
+            })}
           </p>
           <p className="mt-6 text-cream/55 text-sm tracking-wide leading-relaxed">
-            Nagrajeno arhitekturno delo studia Kreadom, 2020.
+            {t({
+              sl: "Nagrajeno arhitekturno delo studia Kreadom, 2020.",
+              it: "Progetto architettonico premiato dello studio Kreadom, 2020.",
+              en: "Award-winning architecture by studio Kreadom, 2020.",
+            })}
           </p>
         </div>
       </div>
       <div className="bg-[color:var(--muted)] p-6 md:p-10 grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-5 items-stretch">
         {cards.map((c, i) => (
           <figure
-            key={c.label}
+            key={c.label.sl}
             className="reveal group relative overflow-hidden bg-emerald-deep"
             style={{ aspectRatio: "4 / 5", transitionDelay: `${i * 120}ms` }}
           >
             <img
               src={c.src}
-              alt={c.label}
+              alt={t(c.label)}
               loading="lazy"
               width={1024}
               height={1024}
@@ -452,8 +726,8 @@ function Ambient() {
             <div className="absolute inset-0 bg-gradient-to-t from-emerald-deep/85 via-emerald-deep/15 to-transparent" />
             <figcaption className="absolute inset-x-0 bottom-0 p-5 text-cream">
               <span className="block hairline w-8 mb-3" />
-              <p className="serif text-xl leading-tight">{c.label}</p>
-              <p className="text-[11px] tracking-wide-2 uppercase text-cream/60 mt-1">{c.caption}</p>
+              <p className="serif text-xl leading-tight">{t(c.label)}</p>
+              <p className="text-[11px] tracking-wide-2 uppercase text-cream/60 mt-1">{t(c.caption)}</p>
             </figcaption>
           </figure>
         ))}
@@ -463,38 +737,41 @@ function Ambient() {
 }
 
 function Gallery() {
-  const tiles = [
-    { src: lec1.url, span: "md:col-span-2 md:row-span-2", ratio: "4 / 3", label: "Sala", size: "large" },
-    { src: lec5.url, span: "", ratio: "3 / 4", label: "Pizza", size: "small" },
-    { src: lec4.url, span: "", ratio: "3 / 4", label: "Bar", size: "small" },
-    { src: lec3.url, span: "md:row-span-2", ratio: "3 / 4", label: "Sladica", size: "tall" },
-    { src: lec2.url, span: "", ratio: "3 / 4", label: "Detajl", size: "small" },
-    { src: lec6.url, span: "md:col-span-2", ratio: "16 / 9", label: "Vhod", size: "wide" },
+  const { t } = useLang();
+  const tiles: { src: string; span: string; ratio: string; label: Text; size: string }[] = [
+    { src: lec1.url, span: "md:col-span-2 md:row-span-2", ratio: "4 / 3", label: { sl: "Sala", it: "Sala", en: "Dining room" }, size: "large" },
+    { src: lec5.url, span: "", ratio: "3 / 4", label: { sl: "Pizza", it: "Pizza", en: "Pizza" }, size: "small" },
+    { src: lec4.url, span: "", ratio: "3 / 4", label: { sl: "Bar", it: "Bar", en: "Bar" }, size: "small" },
+    { src: lec3.url, span: "md:row-span-2", ratio: "3 / 4", label: { sl: "Sladica", it: "Dolce", en: "Dessert" }, size: "tall" },
+    { src: lec2.url, span: "", ratio: "3 / 4", label: { sl: "Detajl", it: "Dettaglio", en: "Detail" }, size: "small" },
+    { src: lec6.url, span: "md:col-span-2", ratio: "16 / 9", label: { sl: "Vhod", it: "Ingresso", en: "Entrance" }, size: "wide" },
   ];
   return (
     <section id="galerija" className="bg-cream py-28 md:py-40 px-6">
       <div className="max-w-7xl mx-auto">
         <div className="text-center reveal mb-16 md:mb-20">
-          <p className="text-bronze tracking-wide-2 uppercase text-[11px] mb-5">Galleria</p>
+          <p className="text-bronze tracking-wide-2 uppercase text-[11px] mb-5">
+            {t({ sl: "Galleria", it: "Immagini", en: "Galleria" })}
+          </p>
           <h2 className="serif text-emerald" style={{ fontSize: "clamp(2.5rem, 6vw, 4.5rem)" }}>
-            Galerija
+            {t({ sl: "Galerija", it: "Galleria", en: "Gallery" })}
           </h2>
           <span className="block hairline w-16 mx-auto mt-8" />
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          {tiles.map((t, i) => (
+          {tiles.map((tile, i) => (
             <figure
               key={i}
               className={
                 "reveal relative overflow-hidden bg-emerald/10 group cursor-pointer " +
-                t.span
+                tile.span
               }
-              style={{ aspectRatio: t.ratio, transitionDelay: `${i * 100}ms` }}
+              style={{ aspectRatio: tile.ratio, transitionDelay: `${i * 100}ms` }}
             >
               <div className="absolute inset-0 overflow-hidden">
                 <img
-                  src={t.src}
-                  alt={`Le Cité — ${t.label}`}
+                  src={tile.src}
+                  alt={`Le Cité — ${t(tile.label)}`}
                   loading="lazy"
                   className="h-full w-full object-cover transition-all duration-[1400ms] ease-[cubic-bezier(0.16,0.84,0.3,1)] group-hover:scale-110 group-hover:brightness-110"
                 />
@@ -503,7 +780,7 @@ function Gallery() {
               <div className="absolute inset-0 bg-gradient-to-t from-emerald-deep/70 via-emerald-deep/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-out" />
               <figcaption className="absolute left-0 right-0 bottom-0 p-4 md:p-5 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700 ease-[cubic-bezier(0.16,0.84,0.3,1)]">
                 <span className="block hairline w-8 mb-2" />
-                <span className="serif italic text-cream text-lg md:text-xl">{t.label}</span>
+                <span className="serif italic text-cream text-lg md:text-xl">{t(tile.label)}</span>
               </figcaption>
             </figure>
           ))}
@@ -514,6 +791,7 @@ function Gallery() {
 }
 
 function LocationMap() {
+  const { t } = useLang();
   return (
     <section id="lokacija" className="bg-emerald text-cream py-28 md:py-40 px-6 relative overflow-hidden">
       <div className="absolute inset-0 marble-pattern-cream opacity-20 pointer-events-none" />
@@ -521,7 +799,7 @@ function LocationMap() {
         <div className="text-center reveal mb-14 md:mb-20">
           <p className="text-bronze tracking-wide-2 uppercase text-[11px] mb-5">Dove siamo</p>
           <h2 className="serif text-cream" style={{ fontSize: "clamp(2.5rem, 6vw, 4.5rem)" }}>
-            Kje nas najdete
+            {t({ sl: "Kje nas najdete", it: "Dove trovarci", en: "Find us" })}
           </h2>
           <span className="block hairline w-16 mx-auto mt-8" />
           <p className="mt-8 text-cream/75 serif italic text-lg">Bevkov trg, 5000 Nova Gorica</p>
@@ -545,7 +823,7 @@ function LocationMap() {
             className="inline-flex items-center justify-center gap-3 bg-bronze text-cream px-8 py-4 text-[12px] tracking-wide-2 uppercase hover:bg-[color:var(--bronze-soft)] transition-colors"
           >
             <MapPin size={16} strokeWidth={1.6} />
-            Navodila za pot
+            {t({ sl: "Navodila za pot", it: "Indicazioni stradali", en: "Get directions" })}
           </a>
         </div>
       </div>
@@ -554,6 +832,12 @@ function LocationMap() {
 }
 
 function Reservation() {
+  const { t } = useLang();
+  const whatsappText = t({
+    sl: "Pozdravljeni, rad bi rezerviral mizo v Le Cité.",
+    it: "Buongiorno, vorrei prenotare un tavolo da Le Cité.",
+    en: "Hello, I would like to book a table at Le Cité.",
+  });
   return (
     <section id="rezervacija" className="grid md:grid-cols-2 min-h-[90vh]">
       <div className="bg-emerald text-cream p-10 md:p-20 flex items-center relative overflow-hidden">
@@ -561,11 +845,15 @@ function Reservation() {
         <div className="relative max-w-md reveal">
           <p className="text-bronze tracking-wide-2 uppercase text-[11px] mb-6">Prenotazione</p>
           <h2 className="serif text-cream leading-[1.05]" style={{ fontSize: "clamp(2.5rem, 5vw, 4rem)" }}>
-            Rezerviraj mizo
+            {t({ sl: "Rezerviraj mizo", it: "Prenota un tavolo", en: "Book a table" })}
           </h2>
           <span className="block hairline w-16 my-8" />
           <p className="serif italic text-cream/80 text-lg md:text-xl leading-relaxed">
-            Pokličite nas — najhitreje in najbolj osebno. Za vikende priporočamo rezervacijo nekaj dni vnaprej.
+            {t({
+              sl: "Pokličite nas — najhitreje in najbolj osebno. Za vikende priporočamo rezervacijo nekaj dni vnaprej.",
+              it: "Chiamateci — è il modo più rapido e personale. Per il fine settimana consigliamo di prenotare qualche giorno prima.",
+              en: "Give us a call — it's the quickest and most personal way. For weekends we recommend booking a few days ahead.",
+            })}
           </p>
           <ul className="mt-12 space-y-5 text-cream/85">
             <li className="flex items-start gap-4">
@@ -581,7 +869,9 @@ function Reservation() {
       </div>
       <div className="bg-cream p-10 md:p-20 flex items-center">
         <div className="w-full max-w-md mx-auto reveal text-center md:text-left">
-          <p className="text-bronze tracking-wide-2 uppercase text-[11px] mb-8">Pokličite</p>
+          <p className="text-bronze tracking-wide-2 uppercase text-[11px] mb-8">
+            {t({ sl: "Pokličite", it: "Chiamateci", en: "Call us" })}
+          </p>
           <a
             href="tel:+38659814129"
             className="serif text-emerald block leading-[0.95] hover:text-bronze transition-colors"
@@ -591,7 +881,11 @@ function Reservation() {
           </a>
           <span className="block hairline w-16 my-10 mx-auto md:mx-0" />
           <p className="text-foreground/65 leading-relaxed">
-            Odgovorimo med delovnim časom. Povejte število gostov, dan in uro — in vam takoj potrdimo mizo.
+            {t({
+              sl: "Odgovorimo med delovnim časom. Povejte število gostov, dan in uro — in vam takoj potrdimo mizo.",
+              it: "Rispondiamo durante l'orario di apertura. Diteci il numero di ospiti, il giorno e l'ora — e vi confermiamo subito il tavolo.",
+              en: "We answer during opening hours. Tell us the number of guests, the day and the time — and we'll confirm your table right away.",
+            })}
           </p>
           <div className="mt-10 flex flex-col sm:flex-row gap-4">
             <a
@@ -599,10 +893,10 @@ function Reservation() {
               className="flex-1 inline-flex items-center justify-center gap-3 bg-emerald text-cream py-4 text-[12px] tracking-wide-2 uppercase hover:bg-emerald-deep transition-colors"
             >
               <Phone size={16} strokeWidth={1.6} />
-              Pokliči
+              {t({ sl: "Pokliči", it: "Chiama", en: "Call" })}
             </a>
             <a
-              href="https://wa.me/38659814129?text=Pozdravljeni%2C%20rad%20bi%20rezerviral%20mizo%20v%20Le%20Cit%C3%A9."
+              href={`https://wa.me/38659814129?text=${encodeURIComponent(whatsappText)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex-1 inline-flex items-center justify-center gap-3 border border-emerald/80 text-emerald py-4 text-[12px] tracking-wide-2 uppercase hover:bg-emerald hover:text-cream transition-colors"
@@ -612,7 +906,7 @@ function Reservation() {
             </a>
           </div>
           <p className="mt-10 text-[11px] tracking-wide-2 uppercase text-foreground/40">
-            Pon–Sob · 11:00–23:00
+            {t({ sl: "Pon–Sob", it: "Lun–Sab", en: "Mon–Sat" })} · 11:00–23:00
           </p>
         </div>
       </div>
