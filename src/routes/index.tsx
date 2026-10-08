@@ -1,6 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Instagram, MapPin, Phone, MessageCircle, ChevronDown } from "lucide-react";
+import { createServerFn } from "@tanstack/react-start";
+import { getRequestUrl } from "@tanstack/react-start/server";
+import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import {
+  Instagram,
+  MapPin,
+  Phone,
+  MessageCircle,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Menu as MenuIcon,
+  X,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,14 +31,89 @@ import lec4 from "@/assets/gallery/lec4.jpg";
 import lec5 from "@/assets/gallery/lec5.jpg";
 import lec6 from "@/assets/gallery/lec6.jpg";
 
+// Opening hours — the single source for the hours shown under "Rezerviraj mizo" and for the
+// daily menu's "closed today" message. Weekdays: 0 = Sunday, 1 = Monday … 6 = Saturday.
+const OPEN_DAYS = [1, 2, 3, 4, 5, 6];
+const HOURS_LABEL: Text = {
+  sl: "Pon–Sob · 11:00–23:00",
+  it: "Lun–Sab · 11:00–23:00",
+  en: "Mon–Sat · 11:00–23:00",
+};
+
+// The restaurant's clock: the daily menu date is always taken in Slovenia, whatever the
+// time zone of the visitor's phone or of the server rendering the page.
+const TIME_ZONE = "Europe/Ljubljana";
+
+function todayInLjubljana(now: Date) {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: TIME_ZONE,
+    day: "numeric",
+    month: "numeric",
+    year: "numeric",
+  }).formatToParts(now);
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((p) => p.type === type)?.value);
+  const day = part("day");
+  const month = part("month");
+  const year = part("year");
+  return {
+    key: `${day}.${month}.${year}`, // same shape as the sheet's "datum" after parsing
+    weekday: new Date(Date.UTC(year, month - 1, day)).getUTCDay(),
+  };
+}
+
+const PHONE = "+386 5 981 4129";
+const PHONE_HREF = "tel:+38659814129";
+const INSTAGRAM = "https://www.instagram.com/le.cite/";
+const MAP_QUERY = "Le+Cit%C3%A9,+Bevkov+trg,+5000+Nova+Gorica";
+
+// Absolute address of the site as the visitor reached it, so link previews (og:image) and the
+// Google data below work on whatever domain the site is published.
+const getSiteOrigin = createServerFn({ method: "GET" }).handler(
+  () => getRequestUrl({ xForwardedHost: true }).origin,
+);
+
+// Business details for Google (schema.org). Opening hours are left out until confirmed.
+function restaurantJsonLd(origin: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Restaurant",
+    name: "Le Cité",
+    url: `${origin}/`,
+    image: `${origin}/og-image.jpg`,
+    telephone: PHONE,
+    servesCuisine: ["Pizza", "Italian"],
+    priceRange: "€€",
+    acceptsReservations: true,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: "Bevkov trg",
+      postalCode: "5000",
+      addressLocality: "Nova Gorica",
+      addressCountry: "SI",
+    },
+    sameAs: [INSTAGRAM],
+  };
+}
+
 export const Route = createFileRoute("/")({
-  head: () => ({
+  loader: () => getSiteOrigin(),
+  head: ({ loaderData: origin = "" }) => ({
     meta: [
       { title: "Le Cité — Pizza napoletana, Nova Gorica" },
       { name: "description", content: "Picerija napoletanskega stila na Bevkovem trgu v Novi Gorici. Ročno izdelane pice, intimno vzdušje, nagrajen interier." },
       { property: "og:title", content: "Le Cité — Pizza napoletana, Nova Gorica" },
       { property: "og:description", content: "Picerija napoletanskega stila na Bevkovem trgu v Novi Gorici." },
+      { property: "og:url", content: `${origin}/` },
+      { property: "og:site_name", content: "Le Cité" },
+      { property: "og:locale", content: "sl_SI" },
+      { property: "og:image", content: `${origin}/og-image.jpg` },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:alt", content: "Le Cité — pizza napoletana, Nova Gorica" },
+      { name: "twitter:image", content: `${origin}/og-image.jpg` },
     ],
+    scripts: [{ type: "application/ld+json", children: JSON.stringify(restaurantJsonLd(origin)) }],
   }),
   component: LocalizedPage,
 });
@@ -115,6 +203,93 @@ function LanguageSwitcher() {
   );
 }
 
+const NAV_LINKS: { id: string; label: Text }[] = [
+  { id: "jedilnik", label: { sl: "Jedilnik", it: "Menu", en: "Menu" } },
+  { id: "interier", label: { sl: "O nas", it: "Chi siamo", en: "About" } },
+  { id: "galerija", label: { sl: "Galerija", it: "Galleria", en: "Gallery" } },
+  { id: "lokacija", label: { sl: "Lokacija", it: "Posizione", en: "Location" } },
+  { id: "rezervacija", label: { sl: "Kontakt", it: "Contatti", en: "Contact" } },
+];
+const BOOK: Text = { sl: "Rezerviraj", it: "Prenota", en: "Book" };
+
+function MobileMenu() {
+  const { t } = useLang();
+  const [open, setOpen] = useState(false);
+  const target = useRef<string | null>(null);
+
+  // The dialog locks page scrolling while open, so the jump happens once it has closed.
+  const go = (id: string) => (e: MouseEvent) => {
+    e.preventDefault();
+    target.current = id;
+    setOpen(false);
+  };
+
+  return (
+    <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
+      <DialogPrimitive.Trigger
+        aria-label={t({ sl: "Odpri meni", it: "Apri il menu", en: "Open menu" })}
+        className="-mr-1 p-1 text-cream outline-none focus-visible:text-bronze"
+      >
+        <MenuIcon size={26} strokeWidth={1.4} />
+      </DialogPrimitive.Trigger>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Content
+          aria-describedby={undefined}
+          onCloseAutoFocus={(e) => {
+            const id = target.current;
+            target.current = null;
+            if (!id) return;
+            e.preventDefault();
+            document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+            history.replaceState(null, "", `#${id}`);
+          }}
+          className="fixed inset-0 z-[60] flex flex-col bg-[color:var(--emerald-deep)] text-cream outline-none"
+        >
+          <div className="absolute inset-0 marble-pattern-cream opacity-30 pointer-events-none" />
+          <DialogPrimitive.Title className="sr-only">
+            {t({ sl: "Meni", it: "Menu", en: "Menu" })}
+          </DialogPrimitive.Title>
+          <div className="relative h-20 px-6 md:px-10 flex items-center justify-between">
+            <span className="serif text-xl md:text-2xl tracking-display">LE CITÉ</span>
+            <DialogPrimitive.Close
+              aria-label={t({ sl: "Zapri meni", it: "Chiudi il menu", en: "Close menu" })}
+              className="-mr-1 p-1 text-cream/85 hover:text-cream outline-none focus-visible:text-bronze"
+            >
+              <X size={28} strokeWidth={1.4} />
+            </DialogPrimitive.Close>
+          </div>
+          <nav className="relative flex-1 flex flex-col justify-center gap-7 px-10">
+            {NAV_LINKS.map((l) => (
+              <a
+                key={l.id}
+                href={`#${l.id}`}
+                onClick={go(l.id)}
+                className="serif text-4xl text-cream hover:text-bronze focus-visible:text-bronze outline-none transition-colors"
+              >
+                {t(l.label)}
+              </a>
+            ))}
+          </nav>
+          <div className="relative px-10 pb-12 flex flex-col gap-4">
+            <a
+              href="#rezervacija"
+              onClick={go("rezervacija")}
+              className="self-start mb-4 bg-bronze text-cream px-7 py-3.5 text-[12px] tracking-wide-2 uppercase hover:bg-[color:var(--bronze-soft)] transition-colors"
+            >
+              {t({ sl: "Rezerviraj mizo", it: "Prenota un tavolo", en: "Book a table" })}
+            </a>
+            <span className="block hairline w-16" />
+            <a href={PHONE_HREF} className="serif text-2xl text-cream/90 hover:text-bronze">
+              {PHONE}
+            </a>
+            <p className="text-[11px] tracking-wide-2 uppercase text-cream/60">{t(HOURS_LABEL)}</p>
+          </div>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
+  );
+}
+
 function Nav() {
   const { t } = useLang();
   const [scrolled, setScrolled] = useState(false);
@@ -134,41 +309,32 @@ function Nav() {
       }
     >
       <div className="mx-auto max-w-7xl px-6 md:px-10 h-20 flex items-center justify-between">
-        <a href="#top" className="serif text-cream text-xl md:text-2xl tracking-display">
+        <a href="#top" className="serif text-cream text-lg sm:text-xl md:text-2xl tracking-display shrink-0">
           LE CITÉ
         </a>
         <div className="hidden lg:flex items-center gap-10 text-[13px] tracking-wide-2 uppercase text-cream/85">
-          <a href="#jedilnik" className="hover:text-cream transition-colors">
-            {t({ sl: "Jedilnik", it: "Menu", en: "Menu" })}
-          </a>
-          <a href="#interier" className="hover:text-cream transition-colors">
-            {t({ sl: "O nas", it: "Chi siamo", en: "About" })}
-          </a>
-          <a href="#galerija" className="hover:text-cream transition-colors">
-            {t({ sl: "Galerija", it: "Galleria", en: "Gallery" })}
-          </a>
-          <a href="#lokacija" className="hover:text-cream transition-colors">
-            {t({ sl: "Lokacija", it: "Posizione", en: "Location" })}
-          </a>
-          <a href="#rezervacija" className="hover:text-cream transition-colors">
-            {t({ sl: "Kontakt", it: "Contatti", en: "Contact" })}
-          </a>
+          {NAV_LINKS.map((l) => (
+            <a key={l.id} href={`#${l.id}`} className="hover:text-cream transition-colors">
+              {t(l.label)}
+            </a>
+          ))}
           <a
             href="#rezervacija"
             className="border border-bronze text-cream px-5 py-2.5 hover:bg-bronze transition-colors"
           >
-            {t({ sl: "Rezerviraj", it: "Prenota", en: "Book" })}
+            {t(BOOK)}
           </a>
           <LanguageSwitcher />
         </div>
-        <div className="lg:hidden flex items-center gap-5 text-[12px] text-cream/85">
+        <div className="lg:hidden flex items-center gap-3 sm:gap-4 text-[12px] text-cream/85">
           <LanguageSwitcher />
           <a
             href="#rezervacija"
-            className="border border-bronze text-cream px-4 py-2 text-[12px] tracking-wide-2 uppercase"
+            className="max-[379px]:hidden border border-bronze text-cream px-3 sm:px-4 py-2 text-[12px] tracking-wide-2 uppercase"
           >
-            {t({ sl: "Rezerviraj", it: "Prenota", en: "Book" })}
+            {t(BOOK)}
           </a>
+          <MobileMenu />
         </div>
       </div>
     </nav>
@@ -243,7 +409,7 @@ function Intro() {
           style={{ fontSize: "clamp(1.75rem, 4.2vw, 3.25rem)" }}
         >
           {t({
-            sl: "„Vsako testo počiva. Vsaka sestavina je izbrana. Vsaka pica je razlog za vrnitev.\"",
+            sl: "„Vsako testo počiva. Vsaka sestavina je izbrana. Vsaka pica je razlog za vrnitev.“",
             it: "“Ogni impasto riposa. Ogni ingrediente è scelto. Ogni pizza è un motivo per tornare.”",
             en: "“Every dough rests. Every ingredient is chosen. Every pizza is a reason to come back.”",
           })}
@@ -460,7 +626,7 @@ function Menu() {
             </li>
           ))}
         </ul>
-        <p className="mt-10 text-center text-cream/45 text-[12px] tracking-wide-2 uppercase reveal">
+        <p className="mt-10 text-center text-cream/65 text-[12px] tracking-wide-2 uppercase reveal">
           {t({
             sl: "Brezglutenske različice na zahtevo",
             it: "Versioni senza glutine su richiesta",
@@ -512,11 +678,13 @@ function DailyMenu() {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [error, setError] = useState(false);
 
-  const today = new Date();
+  const now = new Date();
   // Compared without leading zeros, so "08.10.2026", "8.10.2026" and "8. 10. 2026" all match.
-  const todayStr = `${today.getDate()}.${today.getMonth() + 1}.${today.getFullYear()}`;
+  const today = todayInLjubljana(now);
+  const closedToday = !OPEN_DAYS.includes(today.weekday);
   const locale = LANGS.find((l) => l.code === lang)?.locale ?? "sl-SI";
-  const todayLabel = today.toLocaleDateString(locale, {
+  const todayLabel = now.toLocaleDateString(locale, {
+    timeZone: TIME_ZONE,
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -566,7 +734,7 @@ function DailyMenu() {
     };
   }, []);
 
-  const todays = (rows ?? []).filter((r) => r.datum === todayStr);
+  const todays = (rows ?? []).filter((r) => r.datum === today.key);
 
   return (
     <section id="dnevni-meni" className="bg-cream py-28 md:py-40 px-6">
@@ -595,11 +763,17 @@ function DailyMenu() {
 
         {(error || (rows !== null && todays.length === 0)) && (
           <p className="text-center text-emerald/70 serif italic text-lg md:text-xl">
-            {t({
-              sl: "Dnevni meni bo kmalu objavljen.",
-              it: "Il menu del giorno sarà pubblicato a breve.",
-              en: "Today's menu will be published soon.",
-            })}
+            {closedToday
+              ? t({
+                  sl: "Danes smo zaprti – dnevni meni bo na voljo naslednji delovni dan.",
+                  it: "Oggi siamo chiusi – il menu del giorno tornerà nel prossimo giorno di apertura.",
+                  en: "We're closed today – the daily menu will be back on our next opening day.",
+                })
+              : t({
+                  sl: "Dnevni meni bo kmalu objavljen.",
+                  it: "Il menu del giorno sarà pubblicato a breve.",
+                  en: "Today's menu will be published soon.",
+                })}
           </p>
         )}
 
@@ -639,13 +813,13 @@ function Reviews() {
         className="serif italic text-emerald leading-[1.3]"
         style={{ fontSize: "clamp(1.5rem, 2.6vw, 2.25rem)" }}
       >
-        „{quote}"
+        „{quote}“
       </p>
       <div className="mt-8 text-sm text-foreground/70">{author}</div>
     </div>
   );
   const Stars = () => (
-    <span className="text-bronze tracking-[0.15em]" aria-label="5 zvezdic">★★★★★</span>
+    <span role="img" className="text-bronze tracking-[0.15em]" aria-label="5 od 5 zvezdic">★★★★★</span>
   );
   return (
     <section className="bg-cream py-28 md:py-40 px-6">
@@ -738,17 +912,117 @@ function Ambient() {
   );
 }
 
+type GalleryTile = { src: string; span: string; label: Text };
+
+// Spans fill the grid with no holes: 2 columns on phones, 4 from md up (3 rows of equal height).
+const GALLERY: GalleryTile[] = [
+  { src: lec1, span: "col-span-2 row-span-2", label: { sl: "Sala", it: "Sala", en: "Dining room" } },
+  { src: lec5, span: "row-span-2", label: { sl: "Pizza", it: "Pizza", en: "Pizza" } },
+  { src: lec6, span: "row-span-2", label: { sl: "Vhod", it: "Ingresso", en: "Entrance" } },
+  { src: lec2, span: "col-span-2", label: { sl: "Detajl", it: "Dettaglio", en: "Detail" } },
+  { src: lec3, span: "", label: { sl: "Sladica", it: "Dolce", en: "Dessert" } },
+  { src: lec4, span: "", label: { sl: "Bar", it: "Bar", en: "Bar" } },
+];
+
+function Lightbox({
+  index,
+  onChange,
+  onClose,
+}: {
+  index: number | null;
+  onChange: (index: number) => void;
+  onClose: () => void;
+}) {
+  const { t } = useLang();
+  const startX = useRef<number | null>(null);
+  const swiped = useRef(false);
+  const tile = index === null ? null : GALLERY[index];
+  const go = (step: number) => {
+    if (index !== null) onChange((index + step + GALLERY.length) % GALLERY.length);
+  };
+  // A tap on the dark area around the photo closes it — but not the end of a swipe.
+  const closeOnBackdrop = (e: MouseEvent) => {
+    if (e.target === e.currentTarget && !swiped.current) onClose();
+  };
+  const arrow =
+    "absolute top-1/2 -translate-y-1/2 p-2 text-cream/70 hover:text-cream outline-none focus-visible:text-bronze";
+
+  return (
+    <DialogPrimitive.Root open={tile !== null} onOpenChange={(open) => !open && onClose()}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="fixed inset-0 z-[60] bg-[color:var(--emerald-deep)]/95" />
+        <DialogPrimitive.Content
+          aria-describedby={undefined}
+          className="fixed inset-0 z-[61] flex flex-col items-center justify-center px-14 py-16 md:px-24 outline-none"
+          onKeyDown={(e) => {
+            if (e.key === "ArrowRight") go(1);
+            if (e.key === "ArrowLeft") go(-1);
+          }}
+          onPointerDown={(e) => {
+            startX.current = e.clientX;
+            swiped.current = false;
+          }}
+          onPointerUp={(e) => {
+            if (startX.current === null) return;
+            const dx = e.clientX - startX.current;
+            startX.current = null;
+            if (Math.abs(dx) > 50) {
+              swiped.current = true;
+              go(dx < 0 ? 1 : -1);
+            }
+          }}
+          onClick={closeOnBackdrop}
+        >
+          {tile && (
+            <>
+              <DialogPrimitive.Title className="sr-only">{t(tile.label)}</DialogPrimitive.Title>
+              <img
+                src={tile.src}
+                alt={`Le Cité — ${t(tile.label)}`}
+                draggable={false}
+                className="max-h-[78vh] max-w-full object-contain shadow-2xl select-none"
+              />
+              <p className="mt-5 serif italic text-cream text-xl">
+                {t(tile.label)}
+                <span className="not-italic ml-3 text-sm text-cream/60 tabular-nums">
+                  {(index ?? 0) + 1} / {GALLERY.length}
+                </span>
+              </p>
+            </>
+          )}
+          <DialogPrimitive.Close
+            aria-label={t({ sl: "Zapri", it: "Chiudi", en: "Close" })}
+            className="absolute top-4 right-4 md:top-6 md:right-6 p-2 text-cream/80 hover:text-cream outline-none focus-visible:text-bronze"
+          >
+            <X size={28} strokeWidth={1.4} />
+          </DialogPrimitive.Close>
+          <button
+            type="button"
+            aria-label={t({ sl: "Prejšnja slika", it: "Foto precedente", en: "Previous photo" })}
+            onClick={() => go(-1)}
+            className={arrow + " left-1 md:left-6"}
+          >
+            <ChevronLeft size={36} strokeWidth={1.2} />
+          </button>
+          <button
+            type="button"
+            aria-label={t({ sl: "Naslednja slika", it: "Foto successiva", en: "Next photo" })}
+            onClick={() => go(1)}
+            className={arrow + " right-1 md:right-6"}
+          >
+            <ChevronRight size={36} strokeWidth={1.2} />
+          </button>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
+  );
+}
+
 function Gallery() {
   const { t } = useLang();
-  // Spans fill the grid with no holes: 2 columns on phones, 4 from md up (3 rows of equal height).
-  const tiles: { src: string; span: string; label: Text }[] = [
-    { src: lec1, span: "col-span-2 row-span-2", label: { sl: "Sala", it: "Sala", en: "Dining room" } },
-    { src: lec5, span: "row-span-2", label: { sl: "Pizza", it: "Pizza", en: "Pizza" } },
-    { src: lec6, span: "row-span-2", label: { sl: "Vhod", it: "Ingresso", en: "Entrance" } },
-    { src: lec2, span: "col-span-2", label: { sl: "Detajl", it: "Dettaglio", en: "Detail" } },
-    { src: lec3, span: "", label: { sl: "Sladica", it: "Dolce", en: "Dessert" } },
-    { src: lec4, span: "", label: { sl: "Bar", it: "Bar", en: "Bar" } },
-  ];
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  // Captions show on hover where a mouse exists; on touch screens (no hover) they are always visible.
+  const onHover = "[@media(hover:hover)]:opacity-0 group-hover:opacity-100";
   return (
     <section id="galerija" className="bg-cream py-28 md:py-40 px-6">
       <div className="max-w-7xl mx-auto">
@@ -762,16 +1036,18 @@ function Gallery() {
           <span className="block hairline w-16 mx-auto mt-8" />
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 auto-rows-[160px] sm:auto-rows-[200px] md:auto-rows-[170px] lg:auto-rows-[210px] xl:auto-rows-[240px] gap-3 md:gap-4">
-          {tiles.map((tile, i) => (
+          {GALLERY.map((tile, i) => (
             <figure
               key={i}
-              className={
-                "reveal relative overflow-hidden bg-emerald/10 group cursor-pointer " +
-                tile.span
-              }
+              className={"reveal relative overflow-hidden bg-emerald/10 group " + tile.span}
               style={{ transitionDelay: `${i * 100}ms` }}
             >
-              <div className="absolute inset-0 overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setOpenIndex(i)}
+                aria-label={`${t({ sl: "Povečaj sliko", it: "Ingrandisci la foto", en: "Enlarge photo" })}: ${t(tile.label)}`}
+                className="absolute inset-0 block overflow-hidden cursor-zoom-in outline-none focus-visible:ring-2 focus-visible:ring-bronze focus-visible:ring-inset"
+              >
                 <img
                   src={tile.src}
                   alt={`Le Cité — ${t(tile.label)}`}
@@ -779,9 +1055,19 @@ function Gallery() {
                   className="h-full w-full object-cover transition-all duration-[1400ms] ease-[cubic-bezier(0.16,0.84,0.3,1)] group-hover:scale-110 group-hover:brightness-110"
                 />
                 <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[1000ms] ease-out bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12 pointer-events-none" />
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-emerald-deep/70 via-emerald-deep/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-out" />
-              <figcaption className="absolute left-0 right-0 bottom-0 p-4 md:p-5 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-700 ease-[cubic-bezier(0.16,0.84,0.3,1)]">
+              </button>
+              <div
+                className={
+                  "absolute inset-0 pointer-events-none bg-gradient-to-t from-emerald-deep/70 via-emerald-deep/10 to-transparent transition-opacity duration-700 ease-out " +
+                  onHover
+                }
+              />
+              <figcaption
+                className={
+                  "absolute left-0 right-0 bottom-0 p-4 md:p-5 pointer-events-none transition-all duration-700 ease-[cubic-bezier(0.16,0.84,0.3,1)] [@media(hover:hover)]:translate-y-4 group-hover:translate-y-0 " +
+                  onHover
+                }
+              >
                 <span className="block hairline w-8 mb-2" />
                 <span className="serif italic text-cream text-lg md:text-xl">{t(tile.label)}</span>
               </figcaption>
@@ -789,6 +1075,7 @@ function Gallery() {
           ))}
         </div>
       </div>
+      <Lightbox index={openIndex} onChange={setOpenIndex} onClose={() => setOpenIndex(null)} />
     </section>
   );
 }
@@ -810,7 +1097,7 @@ function LocationMap() {
         <div className="reveal relative overflow-hidden border border-cream/10 shadow-2xl" style={{ aspectRatio: "16 / 9" }}>
           <iframe
             title="Le Cité — Bevkov trg, Nova Gorica"
-            src="https://www.google.com/maps?q=Bevkov+trg+Nova+Gorica&output=embed"
+            src={`https://www.google.com/maps?q=${MAP_QUERY}&output=embed`}
             className="absolute inset-0 w-full h-full"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
@@ -820,7 +1107,7 @@ function LocationMap() {
         </div>
         <div className="reveal mt-10 flex flex-col sm:flex-row justify-center gap-4">
           <a
-            href="https://www.google.com/maps/dir/?api=1&destination=Bevkov+trg+Nova+Gorica"
+            href={`https://www.google.com/maps/dir/?api=1&destination=${MAP_QUERY}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-3 bg-bronze text-cream px-8 py-4 text-[12px] tracking-wide-2 uppercase hover:bg-[color:var(--bronze-soft)] transition-colors"
@@ -842,7 +1129,7 @@ function Reservation() {
     en: "Hello, I would like to book a table at Le Cité.",
   });
   return (
-    <section id="rezervacija" className="grid md:grid-cols-2 min-h-[90vh]">
+    <section id="rezervacija" className="grid lg:grid-cols-2 min-h-[90vh]">
       <div className="bg-emerald text-cream p-10 md:p-20 flex items-center relative overflow-hidden">
         <div className="absolute inset-0 marble-pattern-cream opacity-25 pointer-events-none" />
         <div className="relative max-w-md reveal">
@@ -865,24 +1152,26 @@ function Reservation() {
             </li>
             <li className="flex items-start gap-4">
               <Instagram size={18} strokeWidth={1.4} className="text-bronze mt-0.5 shrink-0" />
-              <a href="https://instagram.com/le.cite" className="hover:text-cream">@le.cite</a>
+              <a href={INSTAGRAM} target="_blank" rel="noopener noreferrer" className="hover:text-cream">
+                @le.cite
+              </a>
             </li>
           </ul>
         </div>
       </div>
       <div className="bg-cream p-10 md:p-20 flex items-center">
-        <div className="w-full max-w-md mx-auto reveal text-center md:text-left">
+        <div className="w-full max-w-md mx-auto reveal text-center lg:text-left">
           <p className="text-bronze tracking-wide-2 uppercase text-[11px] mb-8">
             {t({ sl: "Pokličite", it: "Chiamateci", en: "Call us" })}
           </p>
           <a
-            href="tel:+38659814129"
+            href={PHONE_HREF}
             className="serif text-emerald block leading-[0.95] hover:text-bronze transition-colors"
             style={{ fontSize: "clamp(2.25rem, 6.5vw, 4.25rem)" }}
           >
-            +386 5 981 4129
+            {PHONE}
           </a>
-          <span className="block hairline w-16 my-10 mx-auto md:mx-0" />
+          <span className="block hairline w-16 my-10 mx-auto lg:mx-0" />
           <p className="text-foreground/65 leading-relaxed">
             {t({
               sl: "Odgovorimo med delovnim časom. Povejte število gostov, dan in uro — in vam takoj potrdimo mizo.",
@@ -892,7 +1181,7 @@ function Reservation() {
           </p>
           <div className="mt-10 flex flex-col sm:flex-row gap-4">
             <a
-              href="tel:+38659814129"
+              href={PHONE_HREF}
               className="flex-1 inline-flex items-center justify-center gap-3 bg-emerald text-cream py-4 text-[12px] tracking-wide-2 uppercase hover:bg-emerald-deep transition-colors"
             >
               <Phone size={16} strokeWidth={1.6} />
@@ -908,8 +1197,8 @@ function Reservation() {
               WhatsApp
             </a>
           </div>
-          <p className="mt-10 text-[11px] tracking-wide-2 uppercase text-foreground/40">
-            {t({ sl: "Pon–Sob", it: "Lun–Sab", en: "Mon–Sat" })} · 11:00–23:00
+          <p className="mt-10 text-[11px] tracking-wide-2 uppercase text-foreground/60">
+            {t(HOURS_LABEL)}
           </p>
         </div>
       </div>
@@ -921,15 +1210,23 @@ function Footer() {
   return (
     <footer className="bg-[color:var(--emerald-deep)] text-cream/70 py-16 px-6">
       <div className="max-w-7xl mx-auto grid md:grid-cols-3 items-center gap-10 text-center md:text-left">
-        <p className="text-[11px] tracking-wide-2 uppercase text-cream/45 order-2 md:order-1">© 2025 Le Cité</p>
+        <p className="text-[11px] tracking-wide-2 uppercase text-cream/60 order-2 md:order-1">
+          © {new Date().getFullYear()} Le Cité
+        </p>
         <div className="order-1 md:order-2 text-center">
           <p className="serif tracking-display text-cream text-2xl">LE CITÉ</p>
           <p className="mt-3 text-[12px] tracking-wide-2 uppercase text-cream/50">
-            Bevkov trg · Nova Gorica · +386 5 981 4129
+            Bevkov trg · Nova Gorica · {PHONE}
           </p>
         </div>
         <div className="flex md:justify-end justify-center order-3">
-          <a href="https://instagram.com/le.cite" aria-label="Instagram" className="text-cream/60 hover:text-bronze transition-colors">
+          <a
+            href={INSTAGRAM}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Instagram"
+            className="text-cream/60 hover:text-bronze transition-colors"
+          >
             <Instagram size={20} strokeWidth={1.4} />
           </a>
         </div>

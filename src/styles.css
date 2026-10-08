@@ -45,6 +45,8 @@
 @layer base {
   * { border-color: var(--color-border); }
   html { scroll-behavior: smooth; }
+  /* anchor jumps stop below the fixed 5rem nav instead of hiding the section's top under it */
+  section[id] { scroll-margin-top: 5rem; }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
